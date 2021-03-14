@@ -1,0 +1,41 @@
+{
+  "name": "server",
+  "version": "1.0.0",
+  "description": "This repository contains sample code for the following areas:",
+  "main": "src/main.js",
+  "scripts": {
+    "start": "electron .",
+    "rebuild": "electron-rebuild -f -w sqlite3",
+    "postinstall": "electron-builder install-app-deps",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/tarikguney/electron-with-sqlite3.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/tarikguney/electron-with-sqlite3/issues"
+  },
+  "homepage": "https://github.com/tarikguney/electron-with-sqlite3#readme",
+  "devDependencies": {
+    "electron": "^12.0.1",
+    "electron-builder": "^22.10.5",
+    "electron-rebuild": "^2.3.5"
+  },
+  "dependencies": {
+    "cors": "^2.8.5",
+    "express": "^4.17.1",
+    "knex": "^0.95.2",
+    "sqlite3": "^5.0.2"
+  },
+  "build": {
+    "appId": "com.umang",
+    "copyright": "my",
+    "win": {
+      "target": "zip",
+      "asar": false
+    }
+  }
+}
