@@ -15,13 +15,13 @@ const useStyles = makeStyles((theme) => ({
     bosmhadow: theme.shadows[5],
     padding: theme.spacing(2, 4, 3),
     overflowX: "hidden",
-    outline:"none",
-    userSelect:"None",
+    outline: "none",
+    userSelect: "None",
   },
 }));
 function CustomModal({
   showModal,
-  setShowModal,
+  closeModal,
   modalTitle,
   ModalType,
   modalWidth,
@@ -32,12 +32,13 @@ function CustomModal({
   return (
     <Modal
       disablePortal
-      disableEnforceFocus
       disableAutoFocus
       open={showModal}
-      aria-labelledby="server-modal-title"
-      aria-describedby="server-modal-description"
+      aria-labelledby="modal-label"
       className={classes.modal}
+      onEscapeKeyDown={() => {
+        closeModal();
+      }}
       container={() => rootRef.current}
     >
       <div className={classes.paper}>
@@ -45,10 +46,41 @@ function CustomModal({
           {modalTitle}
         </Typography>
         <Divider />
+        {/* <ModalExample /> */}
         {<ModalType />}
       </div>
     </Modal>
   );
 }
+// function ModalExample() {
+//   const [show, setShow] = useState(false);
+//   return (
+//     <div className="modal-example">
+//       <button
+//         type="button"
+//         className="btn btn-primary mb-4"
+//         onClick={() => {
+//           setShow(true);
+//         }}
+//       >
+//         Open Modal
+//       </button>
+//       <p>Click to get the full Modal experience!</p>
 
+//       <Modal
+//         open={show}
+//         onEscapeKeyDown={() => setShow(false)}
+//         aria-labelledby="modal-label"
+//       >
+//         <div>
+//           <h4 id="modal-label">Text in a modal</h4>
+//           <p>
+//             Duis mollis, est non commodo luctus, nisi erat porttitor ligula.
+//           </p>
+//           <ModalExample />
+//         </div>
+//       </Modal>
+//     </div>
+//   );
+// }1
 export default CustomModal;

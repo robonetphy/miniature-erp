@@ -18,16 +18,16 @@ import {
 } from "react-router-dom";
 import CustomModal from "../modal";
 import {
-  ManageHSN,
-  ManageSize,
-  ManageType,
-  CreateInvoice,
-  AddMerchant,
-  CreateReturn,
-  CreateBreakage,
   CreateStock,
   CreatePurchase,
+  CreateInvoice,
+  CreateBreakage,
+  CreateReturn,
   CreateCompany,
+  AddMerchant,
+  ManageHSN,
+  ManageType,
+  ManageSize,
 } from "../forms";
 const { ipcRenderer } = window.require("electron");
 const drawerWidth = 240;
@@ -57,114 +57,106 @@ const useStyles = makeStyles((theme) => ({
 
 export default function Layout() {
   const classes = useStyles();
-  const [ModalData, setModalData] = useState({
-    showModal: false,
-    modalTitle: "",
-    modalType: () => <></>,
-    modalWidth: "",
-    modalHeight: "",
-  });
-  const setShowModal = (showModalValue) => {
-    setModalData({ ...ModalData, showModal: showModalValue });
+  const [ModalStack, setModalStack] = useState([]);
+  const modalStackPop = () => {
+    setModalStack((prev) =>
+      prev.filter((item, index) => prev.length - 1 !== index)
+    );
   };
-  const handleKeyEvent = useCallback((e, message) => {
-    console.log(message);
-    switch (message) {
-      case "Purchase":
-        setModalData({
-          showModal: true,
-          modalTitle: "Create New Purchase",
-          modalType: CreatePurchase,
-          modalWidth: "100vw",
-          modalHeight: "99vh",
-        });
-        break;
-      case "Stock":
-        setModalData({
-          showModal: true,
-          modalTitle: "Create New Stock",
-          modalType: CreateStock,
-          modalWidth: "40vw",
-          modalHeight: "65vh",
-        });
-        break;
-      case "Company":
-        setModalData({
-          showModal: true,
-          modalTitle: "Create New Company",
-          modalType: CreateCompany,
-          modalWidth: "40vw",
-          modalHeight: "40vh"
-        });
-        break;
-      case "Breakage":
-        setModalData({
-          showModal: true,
-          modalTitle: "Create New Breakage",
-          modalType: CreateBreakage,
-          modalWidth: "100vw",
-          modalHeight: "99vh",
-        });
-        break;
-      case "Return":
-        setModalData({
-          showModal: true,
-          modalTitle: "Create New Return",
-          modalType: CreateReturn,
-          modalWidth: "100vw",
-          modalHeight: "99vh",
-        });
-        break;
-      case "Merchant":
-        setModalData({
-          showModal: true,
-          modalTitle: "Add New Merchant",
-          modalType: AddMerchant,
-          modalWidth: "40vw",
-          modalHeight: "75vh",
-        });
-        break;
-      case "Invoice":
-        setModalData({
-          showModal: true,
-          modalTitle: "Create New Invoice",
-          modalType: CreateInvoice,
-          modalWidth: "100vw",
-          modalHeight: "99vh",
-        });
-        break;
-      case "HSN":
-        setModalData({
-          showModal: true,
-          modalTitle: "Manage HSN",
-          modalType: ManageHSN,
-          modalWidth: "70vw",
-          modalHeight: "80vh",
-        });
-        break;
-      case "Size":
-        setModalData({
-          showModal: true,
-          modalTitle: "Manage Size",
-          modalType: ManageSize,
-          modalWidth: "70vw",
-          modalHeight: "80vh",
-        });
-        break;
-      case "Type":
-        setModalData({
-          showModal: true,
-          modalTitle: "Manage Type",
-          modalType: ManageType,
-          modalWidth: "70vw",
-          modalHeight: "80vh",
-        });
-        break;
-      default:
-        break;
-    }
-    // console.log(message);
-  }, []);
+
+  const ModalData = {
+    Purchase: {
+      showModal: true,
+      closeModal: modalStackPop,
+      modalTitle: "Create New Purchase",
+      ModalType: CreatePurchase,
+      modalWidth: "100vw",
+      modalHeight: "99vh",
+    },
+    Stock: {
+      showModal: true,
+      closeModal: modalStackPop,
+      modalTitle: "Create New Stock",
+      ModalType: CreateStock,
+      modalWidth: "40vw",
+      modalHeight: "65vh",
+    },
+    Company: {
+      showModal: true,
+      closeModal: modalStackPop,
+      modalTitle: "Create New Company",
+      ModalType: CreateCompany,
+      modalWidth: "40vw",
+      modalHeight: "40vh",
+    },
+    Breakage: {
+      showModal: true,
+      closeModal: modalStackPop,
+      modalTitle: "Create New Breakage",
+      ModalType: CreateBreakage,
+      modalWidth: "100vw",
+      modalHeight: "99vh",
+    },
+    Return: {
+      showModal: true,
+      closeModal: modalStackPop,
+      modalTitle: "Create New Return",
+      ModalType: CreateReturn,
+      modalWidth: "100vw",
+      modalHeight: "99vh",
+    },
+    Merchant: {
+      showModal: true,
+      closeModal: modalStackPop,
+      modalTitle: "Add New Merchant",
+      ModalType: AddMerchant,
+      modalWidth: "40vw",
+      modalHeight: "75vh",
+    },
+    Invoice: {
+      showModal: true,
+      closeModal: modalStackPop,
+      modalTitle: "Create New Invoice",
+      ModalType: CreateInvoice,
+      modalWidth: "100vw",
+      modalHeight: "99vh",
+    },
+    HSN: {
+      showModal: true,
+      closeModal: modalStackPop,
+      modalTitle: "Manage HSN",
+      ModalType: ManageHSN,
+      modalWidth: "70vw",
+      modalHeight: "80vh",
+    },
+    Size: {
+      showModal: true,
+      closeModal: modalStackPop,
+      modalTitle: "Manage Size",
+      ModalType: ManageSize,
+      modalWidth: "70vw",
+      modalHeight: "80vh",
+    },
+    Type: {
+      showModal: true,
+      closeModal: modalStackPop,
+      modalTitle: "Manage Type",
+      ModalType: ManageType,
+      modalWidth: "70vw",
+      modalHeight: "80vh",
+    },
+  };
+
+  const modalStackPush = (type) => {
+    setModalStack((oldStack) => [...oldStack, ModalData[type]]);
+  };
+  const handleKeyEvent = useCallback(
+    (e, message) => {
+      console.log(message);
+      modalStackPush(message);
+    },
+    [ModalStack]
+  );
 
   useEffect(() => {
     ipcRenderer.on("modalToLoad", handleKeyEvent);
@@ -212,16 +204,9 @@ export default function Layout() {
           </Switch>
         </main>
       </div>
-      {ModalData.showModal ? (
-        <CustomModal
-          setShowModal={setShowModal}
-          showModal={ModalData.showModal}
-          modalTitle={ModalData.modalTitle}
-          ModalType={ModalData.modalType}
-          modalHeight={ModalData.modalHeight}
-          modalWidth={ModalData.modalWidth}
-        />
-      ) : null}
+      {console.log("Render Again")}
+      {console.log(ModalStack)}
+      {ModalStack ? ModalStack.map((item) => <CustomModal {...item} />) : null}
     </Router>
   );
 }
