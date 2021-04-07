@@ -64,98 +64,97 @@ export default function Layout() {
     );
   };
 
-  const ModalData = {
-    Purchase: {
-      showModal: true,
-      closeModal: modalStackPop,
-      modalTitle: "Create New Purchase",
-      ModalType: CreatePurchase,
-      modalWidth: "100vw",
-      modalHeight: "99vh",
-    },
-    Stock: {
-      showModal: true,
-      closeModal: modalStackPop,
-      modalTitle: "Create New Stock",
-      ModalType: CreateStock,
-      modalWidth: "40vw",
-      modalHeight: "65vh",
-    },
-    Company: {
-      showModal: true,
-      closeModal: modalStackPop,
-      modalTitle: "Create New Company",
-      ModalType: CreateCompany,
-      modalWidth: "40vw",
-      modalHeight: "40vh",
-    },
-    Breakage: {
-      showModal: true,
-      closeModal: modalStackPop,
-      modalTitle: "Create New Breakage",
-      ModalType: CreateBreakage,
-      modalWidth: "100vw",
-      modalHeight: "99vh",
-    },
-    Return: {
-      showModal: true,
-      closeModal: modalStackPop,
-      modalTitle: "Create New Return",
-      ModalType: CreateReturn,
-      modalWidth: "100vw",
-      modalHeight: "99vh",
-    },
-    Merchant: {
-      showModal: true,
-      closeModal: modalStackPop,
-      modalTitle: "Add New Merchant",
-      ModalType: AddMerchant,
-      modalWidth: "40vw",
-      modalHeight: "75vh",
-    },
-    Invoice: {
-      showModal: true,
-      closeModal: modalStackPop,
-      modalTitle: "Create New Invoice",
-      ModalType: CreateInvoice,
-      modalWidth: "100vw",
-      modalHeight: "99vh",
-    },
-    HSN: {
-      showModal: true,
-      closeModal: modalStackPop,
-      modalTitle: "Manage HSN",
-      ModalType: ManageHSN,
-      modalWidth: "70vw",
-      modalHeight: "80vh",
-    },
-    Size: {
-      showModal: true,
-      closeModal: modalStackPop,
-      modalTitle: "Manage Size",
-      ModalType: ManageSize,
-      modalWidth: "70vw",
-      modalHeight: "80vh",
-    },
-    Type: {
-      showModal: true,
-      closeModal: modalStackPop,
-      modalTitle: "Manage Type",
-      ModalType: ManageType,
-      modalWidth: "70vw",
-      modalHeight: "80vh",
-    },
-  };
-
-  const modalStackPush = (type) => {
+  const modalStackPush = useCallback((type) => {
+    const ModalData = {
+      Purchase: {
+        showModal: true,
+        closeModal: modalStackPop,
+        modalTitle: "Create New Purchase",
+        ModalType: CreatePurchase,
+        modalWidth: "100vw",
+        modalHeight: "99vh",
+      },
+      Stock: {
+        showModal: true,
+        closeModal: modalStackPop,
+        modalTitle: "Create New Stock",
+        ModalType: CreateStock,
+        modalWidth: "40vw",
+        modalHeight: "65vh",
+      },
+      Company: {
+        showModal: true,
+        closeModal: modalStackPop,
+        modalTitle: "Create New Company",
+        ModalType: CreateCompany,
+        modalWidth: "40vw",
+        modalHeight: "40vh",
+      },
+      Breakage: {
+        showModal: true,
+        closeModal: modalStackPop,
+        modalTitle: "Create New Breakage",
+        ModalType: CreateBreakage,
+        modalWidth: "100vw",
+        modalHeight: "99vh",
+      },
+      Return: {
+        showModal: true,
+        closeModal: modalStackPop,
+        modalTitle: "Create New Return",
+        ModalType: CreateReturn,
+        modalWidth: "100vw",
+        modalHeight: "99vh",
+      },
+      Merchant: {
+        showModal: true,
+        closeModal: modalStackPop,
+        modalTitle: "Add New Merchant",
+        ModalType: AddMerchant,
+        modalWidth: "40vw",
+        modalHeight: "75vh",
+      },
+      Invoice: {
+        showModal: true,
+        closeModal: modalStackPop,
+        modalTitle: "Create New Invoice",
+        ModalType: CreateInvoice,
+        modalWidth: "100vw",
+        modalHeight: "99vh",
+      },
+      HSN: {
+        showModal: true,
+        closeModal: modalStackPop,
+        modalTitle: "Manage HSN",
+        ModalType: ManageHSN,
+        modalWidth: "70vw",
+        modalHeight: "80vh",
+      },
+      Size: {
+        showModal: true,
+        closeModal: modalStackPop,
+        modalTitle: "Manage Size",
+        ModalType: ManageSize,
+        modalWidth: "70vw",
+        modalHeight: "80vh",
+      },
+      Type: {
+        showModal: true,
+        closeModal: modalStackPop,
+        modalTitle: "Manage Type",
+        ModalType: ManageType,
+        modalWidth: "70vw",
+        modalHeight: "80vh",
+      },
+    };
     setModalStack((oldStack) => [...oldStack, ModalData[type]]);
-  };
+  }, []);
   const handleKeyEvent = useCallback(
     (e, message) => {
       console.log(message);
       modalStackPush(message);
     },
-    [ModalStack]
+    [modalStackPush]
   );
 
   useEffect(() => {
@@ -204,9 +203,7 @@ export default function Layout() {
           </Switch>
         </main>
       </div>
-      {console.log("Render Again")}
-      {console.log(ModalStack)}
-      {ModalStack ? ModalStack.map((item) => <CustomModal {...item} />) : null}
+      {ModalStack ? ModalStack.map((item) => <CustomModal {...item} key={uuidv4()}/>) : null}
     </Router>
   );
 }

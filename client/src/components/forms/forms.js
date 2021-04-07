@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useRef } from "react";
 import {
   TextField,
   Grid,
@@ -16,6 +16,8 @@ import {
   makeStyles,
 } from "@material-ui/core";
 import CustomTable from "../table";
+import useEnterNavigation from "../../hooks/useEnterNavigation";
+import { v4 as uuidv4 } from "uuid";
 function createData(name, qty, rate, amount) {
   return { name, qty, rate, amount };
 }
@@ -123,8 +125,10 @@ const useStyles = makeStyles((theme) => ({
 }));
 export const ManageHSN = () => {
   const classes = useStyles();
+  const containerRef = useRef(null);
+  useEnterNavigation(containerRef);
   return (
-    <>
+    <div ref={containerRef}>
       <Grid container className={classes.button}>
         <Grid item sm={1}>
           <Typography gutterBottom className={classes.label}>
@@ -133,6 +137,8 @@ export const ManageHSN = () => {
         </Grid>
         <Grid item sm={8}>
           <TextField
+            data-navigation="true"
+            autoFocus={true}
             className={classes.textField}
             id="outlined-basic"
             label="HSN Code"
@@ -140,6 +146,7 @@ export const ManageHSN = () => {
             margin="normal"
           />
           <TextField
+            data-navigation="true"
             className={classes.textField}
             id="outlined-basic"
             label="HSN %"
@@ -147,6 +154,7 @@ export const ManageHSN = () => {
             margin="normal"
           />
           <Button
+            data-navigation="true"
             variant="contained"
             size="large"
             color="primary"
@@ -181,13 +189,15 @@ export const ManageHSN = () => {
           ],
         }}
       ></CustomTable>
-    </>
+    </div>
   );
 };
 export const ManageSize = () => {
   const classes = useStyles();
+  const containerRef = useRef(null);
+  useEnterNavigation(containerRef);
   return (
-    <>
+    <div ref={containerRef}>
       <Grid container className={classes.button}>
         <Grid item sm={1}>
           <Typography gutterBottom className={classes.label}>
@@ -196,6 +206,8 @@ export const ManageSize = () => {
         </Grid>
         <Grid item sm={3}>
           <TextField
+            data-navigation="true"
+            autoFocus={true}
             className={classes.textField}
             id="outlined-basic"
             label="Size"
@@ -206,6 +218,7 @@ export const ManageSize = () => {
         </Grid>
         <Grid item sm={3} alignItems="right">
           <Button
+            data-navigation="true"
             variant="contained"
             size="large"
             color="primary"
@@ -222,7 +235,7 @@ export const ManageSize = () => {
           title: "",
           rowsPerPage: 8,
           selectableRows: "none",
-          data:[
+          data: [
             ["10x10"],
             ["10x10"],
             ["10x10"],
@@ -237,16 +250,18 @@ export const ManageSize = () => {
             ["10x10"],
             ["10x10"],
             ["10x10"],
-          ]
+          ],
         }}
       ></CustomTable>
-    </>
+    </div>
   );
 };
 export const ManageType = () => {
   const classes = useStyles();
+  const containerRef = useRef(null);
+  useEnterNavigation(containerRef);
   return (
-    <>
+    <div ref={containerRef}>
       <Grid container className={classes.button}>
         <Grid item sm={1}>
           <Typography gutterBottom className={classes.label}>
@@ -255,6 +270,8 @@ export const ManageType = () => {
         </Grid>
         <Grid item sm={3}>
           <TextField
+            autoFocus={true}
+            data-navigation="true"
             className={classes.textField}
             id="outlined-basic"
             label="Type"
@@ -265,6 +282,7 @@ export const ManageType = () => {
         </Grid>
         <Grid item sm={3} alignItems="right">
           <Button
+            data-navigation="true"
             variant="contained"
             size="large"
             color="primary"
@@ -281,7 +299,7 @@ export const ManageType = () => {
           title: "",
           rowsPerPage: 8,
           selectableRows: "none",
-          data:[
+          data: [
             ["type1"],
             ["type1"],
             ["type1"],
@@ -296,10 +314,10 @@ export const ManageType = () => {
             ["type1"],
             ["type1"],
             ["type1"],
-          ]
+          ],
         }}
       ></CustomTable>
-    </>
+    </div>
   );
 };
 export const CreateInvoice = () => {
@@ -308,8 +326,10 @@ export const CreateInvoice = () => {
   const handleStateChange = (e) => {
     setState(e.target.value);
   };
+  const containerRef = useRef(null);
+  useEnterNavigation(containerRef);
   return (
-    <>
+    <div ref={containerRef}>
       <Grid container className={classes.button}>
         <Grid item sm={1}>
           <Typography gutterBottom className={classes.label}>
@@ -327,6 +347,8 @@ export const CreateInvoice = () => {
         </Grid>
         <Grid item sm={4}>
           <TextField
+            autoFocus={true}
+            data-navigation="true"
             className={classes.textField}
             id="outlined-basic"
             label="Date"
@@ -334,12 +356,14 @@ export const CreateInvoice = () => {
             fullWidth={true}
           />
           <TextField
+            data-navigation="true"
             className={classes.textField}
             id="outlined-basic"
             label="Name"
             variant="outlined"
           />
           <Button
+            data-navigation="true"
             variant="contained"
             size="large"
             color="primary"
@@ -348,6 +372,7 @@ export const CreateInvoice = () => {
             Select Merchant
           </Button>
           <TextField
+            data-navigation="true"
             className={classes.textField}
             id="outlined-basic"
             label="Address"
@@ -355,12 +380,14 @@ export const CreateInvoice = () => {
             fullWidth={true}
           />
           <TextField
+            data-navigation="true"
             className={classes.textField}
             id="outlined-basic"
             label="GSTIN"
             variant="outlined"
           />
           <Select
+            data-navigation="true"
             value={State}
             className={classes.textField}
             onChange={handleStateChange}
@@ -385,6 +412,7 @@ export const CreateInvoice = () => {
             Remarks
           </Typography>
           <Select
+            data-navigation="true"
             value={State}
             className={classes.textField}
             onChange={handleStateChange}
@@ -400,18 +428,21 @@ export const CreateInvoice = () => {
         </Grid>
         <Grid item sm={4}>
           <TextField
+            data-navigation="true"
             className={classes.textField}
             id="outlined-basic"
             label="No1"
             variant="outlined"
           />
           <TextField
+            data-navigation="true"
             className={classes.textField}
             id="outlined-basic"
             label="No1"
             variant="outlined"
           />
           <TextField
+            data-navigation="true"
             className={classes.textField}
             id="outlined-basic"
             label="Transport Details"
@@ -419,6 +450,7 @@ export const CreateInvoice = () => {
             fullWidth={true}
           />
           <TextField
+            data-navigation="true"
             className={classes.textField}
             id="outlined-basic"
             label="Remarks"
@@ -426,6 +458,7 @@ export const CreateInvoice = () => {
             fullWidth={true}
           />
           <Button
+            data-navigation="true"
             variant="contained"
             size="large"
             color="primary"
@@ -434,6 +467,7 @@ export const CreateInvoice = () => {
             Shipped To
           </Button>
           <Button
+            data-navigation="true"
             variant="contained"
             size="large"
             color="primary"
@@ -458,7 +492,7 @@ export const CreateInvoice = () => {
           </TableHead>
           <TableBody>
             {rows3.map((row) => (
-              <TableRow key={row.size}>
+              <TableRow key={uuidv4()}>
                 <TableCell component="th" scope="row">
                   {row.size}
                 </TableCell>
@@ -467,6 +501,7 @@ export const CreateInvoice = () => {
                 </TableCell>
                 <TableCell>
                   <TextField
+                    data-navigation="true"
                     type="number"
                     InputLabelProps={{
                       shrink: true,
@@ -476,6 +511,7 @@ export const CreateInvoice = () => {
                 </TableCell>
                 <TableCell>
                   <TextField
+                    data-navigation="true"
                     type="number"
                     InputLabelProps={{
                       shrink: true,
@@ -485,6 +521,7 @@ export const CreateInvoice = () => {
                 </TableCell>
                 <TableCell component="th" scope="row">
                   <TextField
+                    data-navigation="true"
                     type="number"
                     InputLabelProps={{
                       shrink: true,
@@ -494,6 +531,7 @@ export const CreateInvoice = () => {
                 </TableCell>
                 <TableCell>
                   <TextField
+                    data-navigation="true"
                     type="number"
                     InputLabelProps={{
                       shrink: true,
@@ -510,15 +548,17 @@ export const CreateInvoice = () => {
         </Table>
       </TableContainer>
       <Table className={classes.table} stickyHeader aria-label="sticky table">
-        <TableRow>
-          <TableCell align="right">Weight : 0</TableCell>
-          <TableCell align="right">Count : 0</TableCell>
-          <TableCell align="left">Total Qty : 100</TableCell>
-          <TableCell colSpan={2} align="right">
-            Total Amount
-          </TableCell>
-          <TableCell align="left">100</TableCell>
-        </TableRow>
+        <TableHead>
+          <TableRow>
+            <TableCell align="right">Weight : 0</TableCell>
+            <TableCell align="right">Count : 0</TableCell>
+            <TableCell align="left">Total Qty : 100</TableCell>
+            <TableCell colSpan={2} align="right">
+              Total Amount
+            </TableCell>
+            <TableCell align="left">100</TableCell>
+          </TableRow>
+        </TableHead>
       </Table>
       <Grid
         container
@@ -534,6 +574,7 @@ export const CreateInvoice = () => {
         </Grid>
         <Grid item sm={4}>
           <TextField
+            data-navigation="true"
             className={classes.textField}
             id="outlined-basic"
             label="Transport"
@@ -544,6 +585,7 @@ export const CreateInvoice = () => {
 
         <Grid item sm={6} className={classes.label}>
           <Button
+            data-navigation="true"
             variant="contained"
             size="large"
             color="primary"
@@ -552,6 +594,7 @@ export const CreateInvoice = () => {
             Print
           </Button>
           <Button
+            data-navigation="true"
             variant="contained"
             size="large"
             color="primary"
@@ -560,6 +603,7 @@ export const CreateInvoice = () => {
             Save
           </Button>
           <Button
+            data-navigation="true"
             variant="contained"
             size="large"
             color="primary"
@@ -569,7 +613,7 @@ export const CreateInvoice = () => {
           </Button>
         </Grid>
       </Grid>
-    </>
+    </div>
   );
 };
 export const AddMerchant = () => {
@@ -578,8 +622,15 @@ export const AddMerchant = () => {
   const handleStateChange = (e) => {
     setState(e.target.value);
   };
+  const containerRef = useRef(null);
+  useEnterNavigation(containerRef);
   return (
-    <Grid container spacing={3} className={classes.container}>
+    <Grid
+      ref={containerRef}
+      container
+      spacing={3}
+      className={classes.container}
+    >
       <Grid item sm={3}>
         <Typography gutterBottom className={classes.label}>
           Name
@@ -606,8 +657,10 @@ export const AddMerchant = () => {
           GSTIN
         </Typography>
       </Grid>
-      <Grid item sm={8} alignItems="center" justify="center">
+      <Grid item sm={8}>
         <TextField
+          autoFocus={true}
+          data-navigation="true"
           className={classes.textField}
           id="outlined-basic"
           label="Name"
@@ -615,6 +668,7 @@ export const AddMerchant = () => {
           fullWidth={true}
         />
         <TextField
+          data-navigation="true"
           className={classes.textField}
           id="outlined-basic"
           label="Address"
@@ -622,6 +676,7 @@ export const AddMerchant = () => {
           fullWidth={true}
         />
         <TextField
+          data-navigation="true"
           className={classes.textField}
           id="outlined-basic"
           label="Phone No 1"
@@ -629,6 +684,7 @@ export const AddMerchant = () => {
           fullWidth={true}
         />
         <TextField
+          data-navigation="true"
           className={classes.textField}
           id="outlined-basic"
           label="Phone No 2"
@@ -636,6 +692,7 @@ export const AddMerchant = () => {
           fullWidth={true}
         />
         <TextField
+          data-navigation="true"
           className={classes.textField}
           id="outlined-basic"
           label="Email"
@@ -643,6 +700,7 @@ export const AddMerchant = () => {
           fullWidth={true}
         />
         <TextField
+          data-navigation="true"
           className={classes.textField}
           id="outlined-basic"
           label="PAN No"
@@ -650,6 +708,7 @@ export const AddMerchant = () => {
           fullWidth={true}
         />
         <Select
+          data-navigation="true"
           value={State}
           className={classes.textField}
           onChange={handleStateChange}
@@ -664,6 +723,7 @@ export const AddMerchant = () => {
           <MenuItem value={30}>UP</MenuItem>
         </Select>
         <TextField
+          data-navigation="true"
           className={classes.textField}
           id="outlined-basic"
           label="GSTIN"
@@ -671,8 +731,9 @@ export const AddMerchant = () => {
           fullWidth={true}
         />
       </Grid>
-      <Grid item sm={12} style={{ "text-align-last": "right" }}>
+      <Grid item sm={12} style={{ textAlignLast: "right" }}>
         <Button
+          data-navigation="true"
           variant="contained"
           size="large"
           color="primary"
@@ -681,6 +742,7 @@ export const AddMerchant = () => {
           Save &#38; Again
         </Button>
         <Button
+          data-navigation="true"
           variant="contained"
           size="large"
           color="primary"
@@ -689,6 +751,7 @@ export const AddMerchant = () => {
           Save &#38; Close
         </Button>
         <Button
+          data-navigation="true"
           variant="contained"
           size="large"
           color="primary"
@@ -702,14 +765,18 @@ export const AddMerchant = () => {
 };
 export const CreateReturn = () => {
   const classes = useStyles();
+  const containerRef = useRef(null);
+  useEnterNavigation(containerRef);
   return (
-    <>
+    <div ref={containerRef}>
       <Grid container spacing={1} className={classes.button}>
         <Grid item sm={2}>
           <Typography gutterBottom className={classes.label}>
             Last Return
           </Typography>
           <TextField
+            autoFocus={true}
+            data-navigation="true"
             className={classes.textField}
             id="outlined-basic"
             label="Name"
@@ -722,6 +789,7 @@ export const CreateReturn = () => {
             R-1
           </Typography>
           <Button
+            data-navigation="true"
             variant="contained"
             size="large"
             color="primary"
@@ -743,6 +811,7 @@ export const CreateReturn = () => {
         </Grid>
         <Grid item sm={4}>
           <TextField
+            data-navigation="true"
             className={classes.textField}
             id="outlined-basic"
             label="Date"
@@ -750,18 +819,21 @@ export const CreateReturn = () => {
             fullWidth={true}
           />
           <TextField
+            data-navigation="true"
             className={classes.textField}
             id="outlined-basic"
             label="No1"
             variant="outlined"
           />
           <TextField
+            data-navigation="true"
             className={classes.textField}
             id="outlined-basic"
             label="No1"
             variant="outlined"
           />
           <TextField
+            data-navigation="true"
             className={classes.textField}
             id="outlined-basic"
             label="No2"
@@ -770,15 +842,6 @@ export const CreateReturn = () => {
           />
         </Grid>
       </Grid>
-      <CreateBreakage></CreateBreakage>
-    </>
-  );
-};
-export const CreateBreakage = () => {
-  const classes = useStyles();
-
-  return (
-    <>
       <Grid container className={classes.button}>
         <Grid item sm={1}>
           <Typography gutterBottom className={classes.label}>
@@ -787,6 +850,7 @@ export const CreateBreakage = () => {
         </Grid>
         <Grid item sm={4}>
           <TextField
+            data-navigation="true"
             className={classes.textField}
             id="outlined-basic"
             label="Remarks"
@@ -796,6 +860,7 @@ export const CreateBreakage = () => {
         </Grid>
         <Grid item sm={2} className={classes.label}>
           <Button
+            data-navigation="true"
             variant="contained"
             size="large"
             color="primary"
@@ -820,7 +885,7 @@ export const CreateBreakage = () => {
           </TableHead>
           <TableBody>
             {rows2.map((row) => (
-              <TableRow key={row.size}>
+              <TableRow key={uuidv4()}>
                 <TableCell component="th" scope="row">
                   {row.size}
                 </TableCell>
@@ -835,6 +900,7 @@ export const CreateBreakage = () => {
                 </TableCell>
                 <TableCell>
                   <TextField
+                    data-navigation="true"
                     type="number"
                     InputLabelProps={{
                       shrink: true,
@@ -844,6 +910,7 @@ export const CreateBreakage = () => {
                 </TableCell>
                 <TableCell>
                   <TextField
+                    data-navigation="true"
                     type="number"
                     InputLabelProps={{
                       shrink: true,
@@ -853,6 +920,7 @@ export const CreateBreakage = () => {
                 </TableCell>
                 <TableCell>
                   <TextField
+                    data-navigation="true"
                     type="number"
                     InputLabelProps={{
                       shrink: true,
@@ -866,20 +934,22 @@ export const CreateBreakage = () => {
         </Table>
       </TableContainer>
       <Table className={classes.table} stickyHeader aria-label="sticky table">
-        <TableRow>
-          <TableCell colSpan={1} align="right">
-            Total Items
-          </TableCell>
-          <TableCell align="left">100</TableCell>
-          <TableCell colSpan={2} align="right">
-            Total Qty
-          </TableCell>
-          <TableCell align="left">100</TableCell>
-          <TableCell colSpan={1} align="right">
-            Total Amount
-          </TableCell>
-          <TableCell align="left">100</TableCell>
-        </TableRow>
+        <TableHead>
+          <TableRow>
+            <TableCell colSpan={1} align="right">
+              Total Items
+            </TableCell>
+            <TableCell align="left">100</TableCell>
+            <TableCell colSpan={2} align="right">
+              Total Qty
+            </TableCell>
+            <TableCell align="left">100</TableCell>
+            <TableCell colSpan={1} align="right">
+              Total Amount
+            </TableCell>
+            <TableCell align="left">100</TableCell>
+          </TableRow>
+        </TableHead>
       </Table>
       <Grid
         container
@@ -890,6 +960,7 @@ export const CreateBreakage = () => {
       >
         <Grid item sm={7} className={classes.label}>
           <Button
+            data-navigation="true"
             variant="contained"
             size="large"
             color="primary"
@@ -898,6 +969,7 @@ export const CreateBreakage = () => {
             Print &#38; Save
           </Button>
           <Button
+            data-navigation="true"
             variant="contained"
             size="large"
             color="primary"
@@ -906,6 +978,7 @@ export const CreateBreakage = () => {
             Save &#38; Again
           </Button>
           <Button
+            data-navigation="true"
             variant="contained"
             size="large"
             color="primary"
@@ -914,6 +987,7 @@ export const CreateBreakage = () => {
             Save &#38; Close
           </Button>
           <Button
+            data-navigation="true"
             variant="contained"
             size="large"
             color="primary"
@@ -923,7 +997,172 @@ export const CreateBreakage = () => {
           </Button>
         </Grid>
       </Grid>
-    </>
+    </div>
+  );
+};
+export const CreateBreakage = () => {
+  const classes = useStyles();
+  const containerRef = useRef(null);
+  useEnterNavigation(containerRef);
+  return (
+    <div ref={containerRef}>
+      <Grid container className={classes.button}>
+        <Grid item sm={1}>
+          <Typography gutterBottom className={classes.label}>
+            Remarks
+          </Typography>
+        </Grid>
+        <Grid item sm={4}>
+          <TextField
+            autoFocus={true}
+            data-navigation="true"
+            className={classes.textField}
+            id="outlined-basic"
+            label="Remarks"
+            variant="outlined"
+            fullWidth={true}
+          />
+        </Grid>
+        <Grid item sm={2} className={classes.label}>
+          <Button
+            data-navigation="true"
+            variant="contained"
+            size="large"
+            color="primary"
+            className={classes.button}
+          >
+            Select Tile
+          </Button>
+        </Grid>
+      </Grid>
+      <TableContainer component={Paper} className={classes.tableContainer}>
+        <Table className={classes.table} stickyHeader aria-label="sticky table">
+          <TableHead>
+            <TableRow>
+              <TableCell>Size</TableCell>
+              <TableCell>Product</TableCell>
+              <TableCell>Company</TableCell>
+              <TableCell>Type</TableCell>
+              <TableCell>QTY</TableCell>
+              <TableCell>Rate</TableCell>
+              <TableCell>Sub Total</TableCell>
+            </TableRow>
+          </TableHead>
+          <TableBody>
+            {rows2.map((row) => (
+              <TableRow key={uuidv4()}>
+                <TableCell component="th" scope="row">
+                  {row.size}
+                </TableCell>
+                <TableCell component="th" scope="row">
+                  {row.product}
+                </TableCell>
+                <TableCell component="th" scope="row">
+                  {row.company}
+                </TableCell>
+                <TableCell component="th" scope="row">
+                  {row.type}
+                </TableCell>
+                <TableCell>
+                  <TextField
+                    data-navigation="true"
+                    type="number"
+                    InputLabelProps={{
+                      shrink: true,
+                    }}
+                    defaultValue={row.qty}
+                  />
+                </TableCell>
+                <TableCell>
+                  <TextField
+                    data-navigation="true"
+                    type="number"
+                    InputLabelProps={{
+                      shrink: true,
+                    }}
+                    defaultValue={row.rate}
+                  />
+                </TableCell>
+                <TableCell>
+                  <TextField
+                    data-navigation="true"
+                    type="number"
+                    InputLabelProps={{
+                      shrink: true,
+                    }}
+                    defaultValue={row.subtotal}
+                  />
+                </TableCell>
+              </TableRow>
+            ))}
+          </TableBody>
+        </Table>
+      </TableContainer>
+      <Table className={classes.table} stickyHeader aria-label="sticky table">
+        <TableHead>
+          <TableRow>
+            <TableCell colSpan={1} align="right">
+              Total Items
+            </TableCell>
+            <TableCell align="left">100</TableCell>
+            <TableCell colSpan={2} align="right">
+              Total Qty
+            </TableCell>
+            <TableCell align="left">100</TableCell>
+            <TableCell colSpan={1} align="right">
+              Total Amount
+            </TableCell>
+            <TableCell align="left">100</TableCell>
+          </TableRow>
+        </TableHead>
+      </Table>
+      <Grid
+        container
+        spacing={3}
+        alignItems="center"
+        justify="center"
+        className={classes.button}
+      >
+        <Grid item sm={7} className={classes.label}>
+          <Button
+            data-navigation="true"
+            variant="contained"
+            size="large"
+            color="primary"
+            className={classes.button}
+          >
+            Print &#38; Save
+          </Button>
+          <Button
+            data-navigation="true"
+            variant="contained"
+            size="large"
+            color="primary"
+            className={classes.button}
+          >
+            Save &#38; Again
+          </Button>
+          <Button
+            data-navigation="true"
+            variant="contained"
+            size="large"
+            color="primary"
+            className={classes.button}
+          >
+            Save &#38; Close
+          </Button>
+          <Button
+            data-navigation="true"
+            variant="contained"
+            size="large"
+            color="primary"
+            className={classes.button}
+          >
+            Close
+          </Button>
+        </Grid>
+      </Grid>
+    </div>
   );
 };
 export const CreateStock = () => {
@@ -940,8 +1179,16 @@ export const CreateStock = () => {
   const handleHSNChange = (event) => {
     setHSN(event.target.value);
   };
+
+  const containerRef = useRef(null);
+  useEnterNavigation(containerRef);
   return (
-    <Grid container spacing={3} className={classes.container}>
+    <Grid
+      ref={containerRef}
+      container
+      spacing={3}
+      className={classes.container}
+    >
       <Grid item sm={3}>
         <Typography gutterBottom className={classes.label}>
           Company
@@ -965,14 +1212,17 @@ export const CreateStock = () => {
           HSN/SAC
         </Typography>
       </Grid>
-      <Grid item sm={8} alignItems="center" justify="center">
+      <Grid item sm={8}>
         <TextField
+          autoFocus={true}
+          data-navigation="true"
           className={classes.textField}
           label="Company Name"
           variant="outlined"
           // fullWidth={true}
         />
         <Button
+          data-navigation="true"
           variant="contained"
           size="large"
           color="primary"
@@ -981,12 +1231,14 @@ export const CreateStock = () => {
           Select Company
         </Button>
         <TextField
+          data-navigation="true"
           className={classes.textField}
           label="Tile's Name"
           variant="outlined"
           fullWidth={true}
         />
         <Select
+          data-navigation="true"
           value={Size}
           className={classes.textField}
           onChange={handleSizeChange}
@@ -1001,6 +1253,7 @@ export const CreateStock = () => {
           <MenuItem value={30}>30</MenuItem>
         </Select>
         <TextField
+          data-navigation="true"
           type="number"
           InputLabelProps={{
             shrink: true,
@@ -1012,6 +1265,7 @@ export const CreateStock = () => {
           fullWidth={true}
         />
         <Select
+          data-navigation="true"
           value={Type}
           className={classes.textField}
           onChange={handleTypeChange}
@@ -1026,6 +1280,7 @@ export const CreateStock = () => {
           <MenuItem value={30}>30</MenuItem>
         </Select>
         <TextField
+          data-navigation="true"
           type="number"
           InputLabelProps={{
             shrink: true,
@@ -1037,6 +1292,7 @@ export const CreateStock = () => {
           fullWidth={true}
         />
         <Select
+          data-navigation="true"
           value={HSN}
           className={classes.textField}
           onChange={handleHSNChange}
@@ -1051,8 +1307,9 @@ export const CreateStock = () => {
           <MenuItem value={30}>30</MenuItem>
         </Select>
       </Grid>
-      <Grid item sm={12} style={{ "text-align-last": "right" }}>
+      <Grid item sm={12} style={{ textAlignLast: "right" }}>
         <Button
+          data-navigation="true"
           variant="contained"
           size="large"
           color="primary"
@@ -1061,6 +1318,7 @@ export const CreateStock = () => {
           Save &#38; Again
         </Button>
         <Button
+          data-navigation="true"
           variant="contained"
           size="large"
           color="primary"
@@ -1069,6 +1327,7 @@ export const CreateStock = () => {
           Save &#38; Close
         </Button>
         <Button
+          data-navigation="true"
           variant="contained"
           size="large"
           color="primary"
@@ -1082,9 +1341,10 @@ export const CreateStock = () => {
 };
 export const CreatePurchase = () => {
   const classes = useStyles();
-
+  const containerRef = useRef(null);
+  useEnterNavigation(containerRef);
   return (
-    <>
+    <div ref={containerRef}>
       <Grid
         container
         spacing={3}
@@ -1102,6 +1362,8 @@ export const CreatePurchase = () => {
         </Grid>
         <Grid item sm={6}>
           <TextField
+            data-navigation="true"
+            autoFocus={true}
             id="date"
             label="Date"
             type="date"
@@ -1112,6 +1374,7 @@ export const CreatePurchase = () => {
             }}
           />
           <TextField
+            data-navigation="true"
             className={classes.textField}
             id="outlined-basic"
             label="Title  "
@@ -1121,6 +1384,7 @@ export const CreatePurchase = () => {
         </Grid>
         <Grid item sm={2} className={classes.label}>
           <Button
+            data-navigation="true"
             variant="contained"
             size="large"
             color="primary"
@@ -1142,12 +1406,13 @@ export const CreatePurchase = () => {
           </TableHead>
           <TableBody>
             {rows.map((row) => (
-              <TableRow key={row.name}>
+              <TableRow key={uuidv4()}>
                 <TableCell component="th" scope="row">
                   {row.name}
                 </TableCell>
                 <TableCell>
                   <TextField
+                    data-navigation="true"
                     type="number"
                     InputLabelProps={{
                       shrink: true,
@@ -1157,6 +1422,7 @@ export const CreatePurchase = () => {
                 </TableCell>
                 <TableCell>
                   <TextField
+                    data-navigation="true"
                     type="number"
                     InputLabelProps={{
                       shrink: true,
@@ -1166,6 +1432,7 @@ export const CreatePurchase = () => {
                 </TableCell>
                 <TableCell>
                   <TextField
+                    data-navigation="true"
                     type="number"
                     InputLabelProps={{
                       shrink: true,
@@ -1179,16 +1446,18 @@ export const CreatePurchase = () => {
         </Table>
       </TableContainer>
       <Table className={classes.table} stickyHeader aria-label="sticky table">
-        <TableRow>
-          <TableCell colSpan={1} align="right">
-            Total Qty
-          </TableCell>
-          <TableCell align="left">100</TableCell>
-          <TableCell colSpan={1} align="right">
-            Total Amount
-          </TableCell>
-          <TableCell align="left">100</TableCell>
-        </TableRow>
+        <TableHead>
+          <TableRow>
+            <TableCell colSpan={1} align="right">
+              Total Qty
+            </TableCell>
+            <TableCell align="left">100</TableCell>
+            <TableCell colSpan={1} align="right">
+              Total Amount
+            </TableCell>
+            <TableCell align="left">100</TableCell>
+          </TableRow>
+        </TableHead>
       </Table>
       <Grid
         container
@@ -1204,6 +1473,7 @@ export const CreatePurchase = () => {
         </Grid>
         <Grid item sm={4}>
           <TextField
+            data-navigation="true"
             className={classes.textField}
             id="outlined-basic"
             label="Remarks"
@@ -1213,6 +1483,7 @@ export const CreatePurchase = () => {
         </Grid>
         <Grid item sm={7} className={classes.label}>
           <Button
+            data-navigation="true"
             variant="contained"
             size="large"
             color="primary"
@@ -1221,6 +1492,7 @@ export const CreatePurchase = () => {
             Save &#38; Again
           </Button>
           <Button
+            data-navigation="true"
             variant="contained"
             size="large"
             color="primary"
@@ -1229,6 +1501,7 @@ export const CreatePurchase = () => {
             Save &#38; Close
           </Button>
           <Button
+            data-navigation="true"
             variant="contained"
             size="large"
             color="primary"
@@ -1238,13 +1511,20 @@ export const CreatePurchase = () => {
           </Button>
         </Grid>
       </Grid>
-    </>
+    </div>
   );
 };
 export const CreateCompany = () => {
   const classes = useStyles();
+  const containerRef = useRef(null);
+  useEnterNavigation(containerRef);
   return (
-    <Grid container spacing={3} className={classes.container}>
+    <Grid
+      ref={containerRef}
+      container
+      spacing={3}
+      className={classes.container}
+    >
       <Grid item sm={3}>
         <Typography gutterBottom className={classes.label}>
           Company
@@ -1256,8 +1536,10 @@ export const CreateCompany = () => {
           Phone No.
         </Typography>
       </Grid>
-      <Grid item sm={8} alignItems="center" justify="center">
+      <Grid item sm={8}>
         <TextField
+          autoFocus={true}
+          data-navigation="true"
           className={classes.textField}
           id="outlined-basic"
           label="Company"
@@ -1265,6 +1547,7 @@ export const CreateCompany = () => {
           fullWidth={true}
         />
         <TextField
+          data-navigation="true"
           className={classes.textField}
           id="outlined-basic"
           label="Address"
@@ -1272,6 +1555,7 @@ export const CreateCompany = () => {
           fullWidth={true}
         />
         <TextField
+          data-navigation="true"
           className={classes.textField}
           id="outlined-basic"
           label="Phone No"
@@ -1279,8 +1563,9 @@ export const CreateCompany = () => {
           fullWidth={true}
         />
       </Grid>
-      <Grid item sm={12} style={{ "text-align-last": "right" }}>
+      <Grid item sm={12} style={{ textAlignLast: "right" }}>
         <Button
+          data-navigation="true"
           variant="contained"
           size="large"
           color="primary"
@@ -1289,6 +1574,7 @@ export const CreateCompany = () => {
           Save &#38; Again
         </Button>
         <Button
+          data-navigation="true"
           variant="contained"
           size="large"
           color="primary"
@@ -1297,6 +1583,7 @@ export const CreateCompany = () => {
           Save &#38; Close
         </Button>
         <Button
+          data-navigation="true"
           variant="contained"
           size="large"
           color="primary"
