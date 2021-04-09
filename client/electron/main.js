@@ -140,6 +140,18 @@ const mainMenuTemplate = [
           mainWindow.webContents.send("modalToLoad", "Type");
         },
       },
+      {
+        label: "Manage Weight",
+        click() {
+          mainWindow.webContents.send("modalToLoad", "Weight");
+        },
+      },
+      {
+        label: "Change Rate",
+        click() {
+          mainWindow.webContents.send("modalToLoad", "Rate");
+        },
+      },
     ],
   },
 ];

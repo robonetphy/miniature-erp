@@ -28,6 +28,8 @@ import {
   ManageHSN,
   ManageType,
   ManageSize,
+  ManageWeight,
+  ChangeRate,
 } from "../forms";
 const { ipcRenderer } = window.require("electron");
 const drawerWidth = 240;
@@ -146,8 +148,25 @@ export default function Layout() {
         modalWidth: "70vw",
         modalHeight: "80vh",
       },
+      Rate: {
+        showModal: true,
+        closeModal: modalStackPop,
+        modalTitle: "Change Rates",
+        ModalType: ChangeRate,
+        modalWidth: "100vw",
+        modalHeight: "99vh",
+      },
+      Weight: {
+        showModal: true,
+        closeModal: modalStackPop,
+        modalTitle: "Manage Weights",
+        ModalType: ManageWeight,
+        modalWidth: "100vw",
+        modalHeight: "99vh",
+      },
     };
-    setModalStack((oldStack) => [...oldStack, ModalData[type]]);
+    const data = { ...ModalData[type], key: uuidv4() };
+    setModalStack((oldStack) => [...oldStack, data]);
   }, []);
   const handleKeyEvent = useCallback(
     (e, message) => {
@@ -203,7 +222,13 @@ export default function Layout() {
           </Switch>
         </main>
       </div>
-      {ModalStack ? ModalStack.map((item) => <CustomModal {...item} key={uuidv4()}/>) : null}
+      {ModalStack ? ModalStack.map((item) => <CustomModal {...item}/>) : null}
     </Router>
   );
 }
+
+/*
+tune for where ever the custom table used
+fixedHeader: props.fixedHeader ?? false,
+tableBodyHeight: props.tableBodyHeight ?? "auto",
+*/
