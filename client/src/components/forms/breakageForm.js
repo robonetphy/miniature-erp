@@ -13,28 +13,16 @@ import {
   Typography,
   makeStyles,
 } from "@material-ui/core";
-import useEnterNavigation from "../../hooks/useEnterNavigation";
 import { v4 as uuidv4 } from "uuid";
-
-function createData2(size, product, company, type, qty, rate, subtotal) {
-  return { size, product, company, type, qty, rate, subtotal };
-}
-
-const rows2 = [
-  createData2("Frozen yoghurt", "asda", "asdas", "asdas", 159, 6.0, 24),
-  createData2("Frozen yoghurt", "asda", "asdas", "asdas", 159, 6.0, 24),
-  createData2("Frozen yoghurt", "asda", "asdas", "asdas", 159, 6.0, 24),
-  createData2("Frozen yoghurt", "asda", "asdas", "asdas", 159, 6.0, 24),
-  createData2("Frozen yoghurt", "asda", "asdas", "asdas", 159, 6.0, 24),
-  createData2("Frozen yoghurt", "asda", "asdas", "asdas", 159, 6.0, 24),
-  createData2("Frozen yoghurt", "asda", "asdas", "asdas", 159, 6.0, 24),
-  createData2("Frozen yoghurt", "asda", "asdas", "asdas", 159, 6.0, 24),
-  createData2("Frozen yoghurt", "asda", "asdas", "asdas", 159, 6.0, 24),
-  createData2("Frozen yoghurt", "asda", "asdas", "asdas", 159, 6.0, 24),
-  createData2("Frozen yoghurt", "asda", "asdas", "asdas", 159, 6.0, 24),
-  createData2("Frozen yoghurt", "asda", "asdas", "asdas", 159, 6.0, 24),
-  createData2("Frozen yoghurt", "asda", "asdas", "asdas", 159, 6.0, 24),
-];
+import CustomModal from "../modal";
+import CustomTable from "../table";
+const dataGenerator = (data, length) => {
+  var dummy = [];
+  for (var i = 0; i < length; i++) {
+    dummy.push(data);
+  }
+  return dummy;
+};
 const useStyles = makeStyles((theme) => ({
   textField: {
     margin: "1% 2%",
@@ -58,10 +46,127 @@ const useStyles = makeStyles((theme) => ({
   },
 }));
 
-export default function CreateBreakage (){
+export default function CreateBreakage({ closeModal }) {
   const classes = useStyles();
   const containerRef = useRef(null);
-  useEnterNavigation(containerRef);
+  const [BreakageData, setBreakageData] = useState({
+    Remarks: "",
+    TotalQty: 0,
+    TotalAmount: 0,
+    TotalItem: 0,
+    TableRows: [],
+    showStockTable: false,
+  });
+  const save = () => {
+    //Send Data to Server
+    console.log(BreakageData);
+  };
+  const cleanForm = () => {
+    setBreakageData({
+      Remarks: "",
+      TotalQty: 0,
+      TotalAmount: 0,
+      TotalItem: 0,
+      TableRows: [],
+      showStockTable: false,
+    });
+  };
+  const onTileSelect = (data) => {
+    if (data)
+      setBreakageData((prev) => {
+        const [Product, Size, Company, Qty, Type, Rate] = data;
+        let TotalQty = prev.TotalQty + parseInt(Qty);
+        let TotalAmount = prev.TotalAmount + parseInt(Qty) * parseInt(Rate);
+        let TotalItem = prev.TotalItem + 1;
+        return {
+          ...prev,
+          TotalQty: TotalQty,
+          TotalAmount: TotalAmount,
+          TotalItem: TotalItem,
+          TableRows: [
+            {
+              size: Size,
+              product: Product,
+              company: Company,
+              type: Type,
+              qty: Qty,
+              rate: Rate,
+              subtotal: parseInt(Rate) * parseInt(Qty),
+              key: uuidv4(),
+            },
+            ...prev.TableRows,
+          ],
+          showStockTable: false,
+        };
+      });
+  };
+  const handleBreakageDataChange = (event) => {
+    setBreakageData((prev) => ({
+      ...prev,
+      [event.target.name]: event.target.value,
+    }));
+  };
+  const saveAndClose = (e) => {
+    save();
+    closeModal();
+  };
+  const saveAndAgain = (e) => {
+    save();
+    cleanForm();
+  };
+  const handleRemove = (indexOfRow) => {
+    setBreakageData((prev) => {
+      let TotalQty =
+        prev.TotalQty - parseInt(prev.TableRows[indexOfRow]["qty"]);
+      let TotalAmount =
+        prev.TotalAmount - parseInt(prev.TableRows[indexOfRow]["subtotal"]);
+      let TotalItem = parseInt(prev.TotalItem) - 1;
+      const TableRows = prev.TableRows.filter(
+        (data, index) => index !== indexOfRow
+      );
+      return {
+        ...prev,
+        TotalQty: TotalQty,
+        TotalAmount: TotalAmount,
+        TotalItem: TotalItem,
+        TableRows: TableRows,
+      };
+    });
+  };
+  const handleUpdate = (indexOfRow, value, name) => {
+    setBreakageData((prev) => {
+      let TotalQty = 0;
+      let TotalAmount = 0;
+      const TableRows = prev.TableRows.map((data, index) => {
+        if (index === indexOfRow) {
+          data[name] = value;
+          data["subtotal"] = parseInt(data["qty"]) * parseInt(data["rate"]);
+        }
+        TotalAmount += parseInt(data["subtotal"]);
+        TotalQty += parseInt(data["qty"]);
+        return data;
+      });
+      return {
+        ...prev,
+        TableRows: TableRows,
+        TotalAmount: TotalAmount,
+        TotalQty: TotalQty,
+      };
+    });
+  };
+  const handleDeleteKeyDown = (e, index) => {
+    if (e.which === 46) {
+      handleRemove(index);
+    }
+  };
+  const handleEnterKeyDown = (e, nextLook) => {
+    if (e.which === 13) {
+      var nextFocus = containerRef.current.querySelectorAll(nextLook)[0];
+      while (nextFocus && nextFocus.tabIndex === -1)
+        nextFocus = nextFocus.childNodes[0];
+      nextFocus.focus();
+    }
+  };
   return (
     <div ref={containerRef}>
       <Grid container className={classes.button}>
@@ -73,21 +178,26 @@ export default function CreateBreakage (){
         <Grid item sm={4}>
           <TextField
             autoFocus={true}
-            data-navigation="true"
             className={classes.textField}
-            id="outlined-basic"
             label="Remarks"
             variant="outlined"
+            value={BreakageData.Remarks}
+            onChange={handleBreakageDataChange}
+            name="Remarks"
             fullWidth={true}
           />
         </Grid>
         <Grid item sm={2} className={classes.label}>
           <Button
-            data-navigation="true"
+            data-name="tile"
             variant="contained"
             size="large"
             color="primary"
             className={classes.button}
+            onClick={() => {
+              containerRef.current.querySelector(":focus").blur();
+              setBreakageData((prev) => ({ ...prev, showStockTable: true }));
+            }}
           >
             Select Tile
           </Button>
@@ -107,8 +217,8 @@ export default function CreateBreakage (){
             </TableRow>
           </TableHead>
           <TableBody>
-            {rows2.map((row) => (
-              <TableRow key={uuidv4()}>
+            {BreakageData.TableRows.map((row, index) => (
+              <TableRow key={row.key}>
                 <TableCell component="th" scope="row">
                   {row.size}
                 </TableCell>
@@ -123,34 +233,35 @@ export default function CreateBreakage (){
                 </TableCell>
                 <TableCell>
                   <TextField
-                    data-navigation="true"
                     type="number"
-                    InputLabelProps={{
-                      shrink: true,
+                    InputProps={{ inputProps: { min: 1 } }}
+                    autoFocus={index === 0 ? true : false}
+                    onChange={(e) => {
+                      handleUpdate(index, e.target.value, "qty");
                     }}
-                    defaultValue={row.qty}
+                    onKeyDown={(e) => {
+                      handleDeleteKeyDown(e, index);
+                      handleEnterKeyDown(e, "[data-name=rate]");
+                    }}
+                    value={row.qty}
                   />
                 </TableCell>
                 <TableCell>
                   <TextField
-                    data-navigation="true"
+                    data-name="rate"
                     type="number"
-                    InputLabelProps={{
-                      shrink: true,
+                    InputProps={{ inputProps: { min: 1 } }}
+                    value={row.rate}
+                    onChange={(e) => {
+                      handleUpdate(index, e.target.value, "rate");
                     }}
-                    defaultValue={row.rate}
+                    onKeyDown={(e) => {
+                      handleDeleteKeyDown(e, index);
+                      handleEnterKeyDown(e, "[data-name=tile]");
+                    }}
                   />
                 </TableCell>
-                <TableCell>
-                  <TextField
-                    data-navigation="true"
-                    type="number"
-                    InputLabelProps={{
-                      shrink: true,
-                    }}
-                    defaultValue={row.subtotal}
-                  />
-                </TableCell>
+                <TableCell>{row.subtotal}</TableCell>
               </TableRow>
             ))}
           </TableBody>
@@ -162,15 +273,15 @@ export default function CreateBreakage (){
             <TableCell colSpan={1} align="right">
               Total Items
             </TableCell>
-            <TableCell align="left">100</TableCell>
+            <TableCell align="left">{BreakageData.TotalItem}</TableCell>
             <TableCell colSpan={2} align="right">
               Total Qty
             </TableCell>
-            <TableCell align="left">100</TableCell>
+            <TableCell align="left">{BreakageData.TotalQty}</TableCell>
             <TableCell colSpan={1} align="right">
               Total Amount
             </TableCell>
-            <TableCell align="left">100</TableCell>
+            <TableCell align="left">{BreakageData.TotalAmount}</TableCell>
           </TableRow>
         </TableHead>
       </Table>
@@ -183,7 +294,6 @@ export default function CreateBreakage (){
       >
         <Grid item sm={7} className={classes.label}>
           <Button
-            data-navigation="true"
             variant="contained"
             size="large"
             color="primary"
@@ -192,34 +302,71 @@ export default function CreateBreakage (){
             Print &#38; Save
           </Button>
           <Button
-            data-navigation="true"
             variant="contained"
             size="large"
             color="primary"
             className={classes.button}
+            onClick={saveAndAgain}
           >
             Save &#38; Again
           </Button>
           <Button
-            data-navigation="true"
             variant="contained"
             size="large"
             color="primary"
             className={classes.button}
+            onClick={saveAndClose}
           >
             Save &#38; Close
           </Button>
           <Button
-            data-navigation="true"
             variant="contained"
             size="large"
             color="primary"
             className={classes.button}
+            onClick={closeModal}
           >
             Close
           </Button>
         </Grid>
       </Grid>
+      {BreakageData.showStockTable ? (
+        <CustomModal
+          showModal={BreakageData.showStockTable}
+          closeModal={() => {
+            setBreakageData((prev) => ({ ...prev, showStockTable: false }));
+          }}
+          modalTitle="Stock Table"
+          ModalType={(props) => (
+            <CustomTable
+              {...{
+                columns: [
+                  "Name",
+                  "Size",
+                  "Company",
+                  "Qty",
+                  "Type",
+                  "Rate",
+                  "HNS",
+                ],
+                data: [
+                  ...dataGenerator(
+                    ["T1", "18x12", "ABC", 1000, "abs", 200, "12%"],
+                    105
+                  ),
+                ],
+                title: "Inventory",
+                isSearchEnable: true,
+                fixedHeader: true,
+                tableBodyHeight: "450px",
+                editCallback: onTileSelect,
+              }}
+            />
+          )}
+          modalWidth="60vw"
+          modalHeight="70vh"
+        ></CustomModal>
+      ) : null}
     </div>
   );
-};
+}

@@ -32,6 +32,29 @@ export default function ManageHSN() {
   const classes = useStyles();
   const containerRef = useRef(null);
   useEnterNavigation(containerRef);
+  const [HSNData, setHSNData] = useState({
+    TableData: [],
+    HSNCode: "",
+    HSN: "",
+  });
+  const handleHSNDataChange = (event) => {
+    setHSNData((prev) => ({
+      ...prev,
+      [event.target.name]: event.target.value,
+    }));
+  };
+  const save = () => {
+    console.log(HSNData);
+  };
+  const handleAddHSN = () => {
+    save();
+    setHSNData((prev) => ({
+      ...prev,
+      TableData: [[prev.HSNCode, prev.HSN], ...prev.TableData],
+      HSNCode: "",
+      HSN: "",
+    }));
+  };
   return (
     <div ref={containerRef}>
       <Grid container className={classes.button}>
@@ -45,18 +68,22 @@ export default function ManageHSN() {
             data-navigation="true"
             autoFocus={true}
             className={classes.textField}
-            id="outlined-basic"
             label="HSN Code"
             variant="outlined"
             margin="normal"
+            value={HSNData.HSNCode}
+            onChange={handleHSNDataChange}
+            name="HSNCode"
           />
           <TextField
             data-navigation="true"
             className={classes.textField}
-            id="outlined-basic"
             label="HSN %"
             variant="outlined"
             margin="normal"
+            value={HSNData.HSN}
+            onChange={handleHSNDataChange}
+            name="HSN"
           />
           <Button
             data-navigation="true"
@@ -64,6 +91,7 @@ export default function ManageHSN() {
             size="large"
             color="primary"
             className={classes.Typebutton}
+            onClick={handleAddHSN}
           >
             ADD
           </Button>
@@ -77,22 +105,7 @@ export default function ManageHSN() {
           fixedHeader: true,
           tableBodyHeight: "500px",
           selectableRows: "none",
-          data: [
-            ["Abc", "12%"],
-            ["Abc", "12%"],
-            ["Abc", "12%"],
-            ["Abc", "12%"],
-            ["Abc", "12%"],
-            ["Abc", "12%"],
-            ["Abc", "12%"],
-            ["Abc", "12%"],
-            ["Abc", "12%"],
-            ["Abc", "12%"],
-            ["Abc", "12%"],
-            ["Abc", "12%"],
-            ["Abc", "12%"],
-            ["Abc", "12%"],
-          ],
+          data: HSNData.TableData,
         }}
       ></CustomTable>
     </div>

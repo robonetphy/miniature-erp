@@ -24,9 +24,42 @@ const useStyles = makeStyles((theme) => ({
   },
 }));
 
-export default function CreateCompany() {
+export default function CreateCompany({ closeModal }) {
   const classes = useStyles();
   const containerRef = useRef(null);
+  const [CompanyData, setCompanyData] = useState({
+    Company: "",
+    Address: "",
+    PhoneNo: "",
+  });
+
+  const save = () => {
+    //Send Data to Server
+    console.log(CompanyData);
+  };
+  const cleanForm = () => {
+    setCompanyData({
+      Company: "",
+      Address: "",
+      PhoneNo: "",
+    });
+  };
+  const saveAndClose = (e) => {
+    save();
+    closeModal();
+  };
+  const saveAndAgain = (e) => {
+    save();
+    cleanForm();
+  };
+
+  const handleCompanyDataChange = (event) => {
+    setCompanyData((prev) => ({
+      ...prev,
+      [event.target.name]: event.target.value,
+    }));
+  };
+
   useEnterNavigation(containerRef);
   return (
     <Grid
@@ -50,8 +83,10 @@ export default function CreateCompany() {
         <TextField
           autoFocus={true}
           data-navigation="true"
+          value={CompanyData.Company}
+          onChange={handleCompanyDataChange}
+          name="Company"
           className={classes.textField}
-          id="outlined-basic"
           label="Company"
           variant="outlined"
           fullWidth={true}
@@ -59,45 +94,51 @@ export default function CreateCompany() {
         <TextField
           data-navigation="true"
           className={classes.textField}
-          id="outlined-basic"
           label="Address"
           variant="outlined"
           fullWidth={true}
+          value={CompanyData.Address}
+          onChange={handleCompanyDataChange}
+          name="Address"
         />
         <TextField
           data-navigation="true"
           className={classes.textField}
-          id="outlined-basic"
           label="Phone No"
           variant="outlined"
           fullWidth={true}
+          value={CompanyData.PhoneNo}
+          onChange={handleCompanyDataChange}
+          name="PhoneNo"
         />
       </Grid>
       <Grid item sm={12} style={{ textAlignLast: "right" }}>
         <Button
-          data-navigation="true"
           variant="contained"
           size="large"
           color="primary"
           className={classes.button}
+          onClick={saveAndAgain}
         >
           Save &#38; Again
         </Button>
         <Button
-          data-navigation="true"
           variant="contained"
           size="large"
           color="primary"
           className={classes.button}
+          onClick={saveAndClose}
         >
           Save &#38; Close
         </Button>
         <Button
-          data-navigation="true"
           variant="contained"
           size="large"
           color="primary"
           className={classes.button}
+          onClick={() => {
+            closeModal();
+          }}
         >
           Close
         </Button>

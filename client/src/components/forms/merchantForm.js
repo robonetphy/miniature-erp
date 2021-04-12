@@ -31,11 +31,49 @@ const useStyles = makeStyles((theme) => ({
   },
 }));
 
-export default function AddMerchant() {
+export default function AddMerchant({ closeModal }) {
   const classes = useStyles();
-  const [State, setState] = useState("");
-  const handleStateChange = (e) => {
-    setState(e.target.value);
+  const [MerchantData, setMerchantData] = useState({
+    Name: "",
+    Address: "",
+    PhoneNo1: "",
+    PhoneNo2: "",
+    Email: "",
+    PANNo: "",
+    State: "",
+    GSTIN: "",
+  });
+
+  const save = () => {
+    //Send Data to Server
+    console.log(MerchantData);
+  };
+  const cleanForm = () => {
+    setMerchantData({
+      Name: "",
+      Address: "",
+      PhoneNo1: "",
+      PhoneNo2: "",
+      Email: "",
+      PANNo: "",
+      State: "",
+      GSTIN: "",
+    });
+  };
+  const saveAndClose = (e) => {
+    save();
+    closeModal();
+  };
+  const saveAndAgain = (e) => {
+    save();
+    cleanForm();
+  };
+
+  const handleMerchantDataChange = (event) => {
+    setMerchantData((prev) => ({
+      ...prev,
+      [event.target.name]: event.target.value,
+    }));
   };
   const containerRef = useRef(null);
   useEnterNavigation(containerRef);
@@ -77,56 +115,69 @@ export default function AddMerchant() {
           autoFocus={true}
           data-navigation="true"
           className={classes.textField}
-          id="outlined-basic"
           label="Name"
+          onChange={handleMerchantDataChange}
+          name="Name"
+          value={MerchantData.Name}
           variant="outlined"
           fullWidth={true}
         />
         <TextField
           data-navigation="true"
           className={classes.textField}
-          id="outlined-basic"
           label="Address"
+          onChange={handleMerchantDataChange}
+          name="Address"
+          value={MerchantData.Address}
           variant="outlined"
           fullWidth={true}
         />
         <TextField
           data-navigation="true"
           className={classes.textField}
-          id="outlined-basic"
           label="Phone No 1"
           variant="outlined"
+          onChange={handleMerchantDataChange}
+          name="PhoneNo1"
+          value={MerchantData.PhoneNo1}
           fullWidth={true}
         />
         <TextField
           data-navigation="true"
           className={classes.textField}
-          id="outlined-basic"
           label="Phone No 2"
+          onChange={handleMerchantDataChange}
+          name="PhoneNo2"
+          value={MerchantData.PhoneNo2}
           variant="outlined"
           fullWidth={true}
         />
         <TextField
           data-navigation="true"
           className={classes.textField}
-          id="outlined-basic"
           label="Email"
+          onChange={handleMerchantDataChange}
+          name="Email"
+          value={MerchantData.Email}
           variant="outlined"
           fullWidth={true}
         />
         <TextField
           data-navigation="true"
           className={classes.textField}
-          id="outlined-basic"
           label="PAN No"
+          onChange={handleMerchantDataChange}
+          name="PANNo"
+          value={MerchantData.PANNo}
           variant="outlined"
           fullWidth={true}
         />
         <Select
           data-navigation="true"
-          value={State}
+          onChange={handleMerchantDataChange}
+          name="State"
+          value={MerchantData.State}
           className={classes.textField}
-          onChange={handleStateChange}
           variant="outlined"
           fullWidth={true}
         >
@@ -140,37 +191,41 @@ export default function AddMerchant() {
         <TextField
           data-navigation="true"
           className={classes.textField}
-          id="outlined-basic"
           label="GSTIN"
+          onChange={handleMerchantDataChange}
+          name="GSTIN"
+          value={MerchantData.GSTIN}
           variant="outlined"
           fullWidth={true}
         />
       </Grid>
       <Grid item sm={12} style={{ textAlignLast: "right" }}>
         <Button
-          data-navigation="true"
           variant="contained"
           size="large"
           color="primary"
           className={classes.button}
+          onClick={saveAndAgain}
         >
           Save &#38; Again
         </Button>
         <Button
-          data-navigation="true"
           variant="contained"
           size="large"
           color="primary"
           className={classes.button}
+          onClick={saveAndClose}
         >
           Save &#38; Close
         </Button>
         <Button
-          data-navigation="true"
           variant="contained"
           size="large"
           color="primary"
           className={classes.button}
+          onClick={() => {
+            closeModal();
+          }}
         >
           Close
         </Button>

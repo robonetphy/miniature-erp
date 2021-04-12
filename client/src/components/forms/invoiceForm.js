@@ -15,30 +15,23 @@ import {
   Typography,
   makeStyles,
 } from "@material-ui/core";
-import useEnterNavigation from "../../hooks/useEnterNavigation";
+import CustomModal from "../modal";
+import CustomTable from "../table";
 import { v4 as uuidv4 } from "uuid";
-function createData3(size, product, qty, rate, discount, subtotal, hsn) {
-  return { size, product, qty, rate, discount, subtotal, hsn };
-}
-
-const rows3 = [
-  createData3("18'", "asda", 15, 159, 6.0, 2434, "asd"),
-  createData3("18'", "asda", 15, 159, 6.0, 2434, "asd"),
-  createData3("18'", "asda", 15, 159, 6.0, 2434, "asd"),
-  createData3("18'", "asda", 15, 159, 6.0, 2434, "asd"),
-  createData3("18'", "asda", 15, 159, 6.0, 2434, "asd"),
-  createData3("18'", "asda", 15, 159, 6.0, 2434, "asd"),
-  createData3("18'", "asda", 15, 159, 6.0, 2434, "asd"),
-  createData3("18'", "asda", 15, 159, 6.0, 2434, "asd"),
-  createData3("18'", "asda", 15, 159, 6.0, 2434, "asd"),
-];
+const dataGenerator = (data, length) => {
+  var dummy = [];
+  for (var i = 0; i < length; i++) {
+    dummy.push(data);
+  }
+  return dummy;
+};
 const useStyles = makeStyles((theme) => ({
   textField: {
     margin: "1% 2%",
   },
   label: {
     fontSize: "1rem",
-    padding: "17.5px 14px;",
+    padding: "18px 14px;",
     textAlign: "right",
   },
   button: {
@@ -52,14 +45,158 @@ const useStyles = makeStyles((theme) => ({
   },
 }));
 
-export default function CreateInvoice() {
+export default function CreateInvoice({ closeModal }) {
   const classes = useStyles();
-  const [State, setState] = useState("");
-  const handleStateChange = (e) => {
-    setState(e.target.value);
-  };
   const containerRef = useRef(null);
-  useEnterNavigation(containerRef);
+  // useEnterNavigation(containerRef);
+  const [InvoiceData, setInvoiceData] = useState({
+    Remarks: "",
+    TotalQty: 0,
+    TotalAmount: 0,
+    Count: 0,
+    TableRows: [],
+    showMerchantTable: false,
+    showStockTable: false,
+    showMerchantCallback: null,
+    MerchantName: "",
+    Date: new Date().toISOString().substring(0, 10),
+    Address: "",
+    PhoneNo1: "",
+    PhoneNo2: "",
+    State: "",
+    PaymentType: "",
+    TransportDetails: "",
+    Transport: "",
+    Weight: 0,
+    ShippedTo: {},
+    GSTIN: "",
+  });
+  const save = () => {
+    //Send Data to Server
+    console.log(InvoiceData);
+  };
+  const onMerchantSelect = (data) => {
+    if (data)
+      setInvoiceData((prev) => {
+        const [Merchant, Address, PhoneNo1, PhoneNo2] = data;
+        return {
+          ...prev,
+          MerchantName: Merchant,
+          Address: Address,
+          PhoneNo1: PhoneNo1,
+          PhoneNo2: PhoneNo2,
+          showMerchantTable: false,
+        };
+      });
+  };
+  const onShippedToSelect = (data) => {
+    if (data)
+      setInvoiceData((prev) => {
+        const [Merchant, Address, PhoneNo1, PhoneNo2] = data;
+        return {
+          ...prev,
+          ShippedTo: {
+            MerchantName: Merchant,
+            Address: Address,
+            PhoneNo1: PhoneNo1,
+            PhoneNo2: PhoneNo2,
+          },
+          showMerchantTable: false,
+        };
+      });
+  };
+  const onTileSelect = (data) => {
+    if (data)
+      setInvoiceData((prev) => {
+        const [Product, Size, , Qty, , Rate, HSN] = data;
+        let TotalQty = prev.TotalQty + parseInt(Qty);
+        let TotalAmount = prev.TotalAmount + parseInt(Qty) * parseInt(Rate);
+        let Count = prev.Count + 1;
+        return {
+          ...prev,
+          TotalQty: TotalQty,
+          TotalAmount: TotalAmount,
+          Count: Count,
+          TableRows: [
+            {
+              size: Size,
+              product: Product,
+              qty: Qty,
+              rate: Rate,
+              hsn: HSN,
+              discount: 0,
+              subtotal: parseInt(Rate) * parseInt(Qty),
+              key: uuidv4(),
+            },
+            ...prev.TableRows,
+          ],
+          showStockTable: false,
+        };
+      });
+  };
+  const handleInvoiceDataChange = (event) => {
+    setInvoiceData((prev) => ({
+      ...prev,
+      [event.target.name]: event.target.value,
+    }));
+  };
+
+  const handleRemove = (indexOfRow) => {
+    setInvoiceData((prev) => {
+      let TotalQty =
+        prev.TotalQty - parseInt(prev.TableRows[indexOfRow]["qty"]);
+      let TotalAmount =
+        prev.TotalAmount - parseInt(prev.TableRows[indexOfRow]["subtotal"]);
+      let Count = parseInt(prev.Count) - 1;
+      const TableRows = prev.TableRows.filter(
+        (data, index) => index !== indexOfRow
+      );
+      return {
+        ...prev,
+        TotalQty: TotalQty,
+        TotalAmount: TotalAmount,
+        Count: Count,
+        TableRows: TableRows,
+      };
+    });
+  };
+  const handleUpdate = (indexOfRow, value, name) => {
+    setInvoiceData((prev) => {
+      let TotalQty = 0;
+      let TotalAmount = 0;
+      const TableRows = prev.TableRows.map((data, index) => {
+        if (index === indexOfRow) {
+          data[name] = value;
+          data["subtotal"] = parseInt(data["qty"]) * parseInt(data["rate"]);
+          data["subtotal"] -=
+            (parseInt(data["discount"]) * data["subtotal"]) / 100;
+        }
+        TotalAmount += parseInt(data["subtotal"]);
+        TotalQty += parseInt(data["qty"]);
+        return data;
+      });
+      return {
+        ...prev,
+        TableRows: TableRows,
+        TotalAmount: TotalAmount,
+        TotalQty: TotalQty,
+      };
+    });
+  };
+  const handleDeleteKeyDown = (e, index) => {
+    if (e.which === 46) {
+      handleRemove(index);
+    }
+  };
+  const handleEnterKeyDown = (e, nextLook) => {
+    if (e.which === 13) {
+      var nextFocus = containerRef.current.querySelectorAll(nextLook)[0];
+      while (nextFocus && nextFocus.tabIndex === -1)
+        nextFocus = nextFocus.childNodes[0];
+      nextFocus.focus();
+    }
+  };
+
   return (
     <div ref={containerRef}>
       <Grid container className={classes.button}>
@@ -80,49 +217,61 @@ export default function CreateInvoice() {
         <Grid item sm={4}>
           <TextField
             autoFocus={true}
-            data-navigation="true"
             className={classes.textField}
-            id="outlined-basic"
             label="Date"
+            value={InvoiceData.Date}
+            onChange={handleInvoiceDataChange}
+            name="Date"
             variant="outlined"
             fullWidth={true}
           />
           <TextField
-            data-navigation="true"
             className={classes.textField}
-            id="outlined-basic"
             label="Name"
+            value={InvoiceData.MerchantName}
+            onChange={handleInvoiceDataChange}
+            name="MerchantName"
+            disabled={true}
             variant="outlined"
           />
           <Button
-            data-navigation="true"
             variant="contained"
             size="large"
             color="primary"
             className={classes.button}
+            onClick={() => {
+              containerRef.current.querySelector(":focus").blur();
+              setInvoiceData((prev) => ({
+                ...prev,
+                showMerchantTable: true,
+                showMerchantCallback: onMerchantSelect,
+              }));
+            }}
           >
             Select Merchant
           </Button>
           <TextField
-            data-navigation="true"
             className={classes.textField}
-            id="outlined-basic"
             label="Address"
             variant="outlined"
+            value={InvoiceData.Address}
+            onChange={handleInvoiceDataChange}
+            name="Address"
             fullWidth={true}
           />
           <TextField
-            data-navigation="true"
             className={classes.textField}
-            id="outlined-basic"
             label="GSTIN"
+            value={InvoiceData.GSTIN}
+            onChange={handleInvoiceDataChange}
+            name="GSTIN"
             variant="outlined"
           />
           <Select
-            data-navigation="true"
-            value={State}
             className={classes.textField}
-            onChange={handleStateChange}
+            value={InvoiceData.State}
+            onChange={handleInvoiceDataChange}
+            name="State"
             variant="outlined"
           >
             <MenuItem value="">
@@ -144,10 +293,10 @@ export default function CreateInvoice() {
             Remarks
           </Typography>
           <Select
-            data-navigation="true"
-            value={State}
+            value={InvoiceData.PaymentType}
+            onChange={handleInvoiceDataChange}
+            name="PaymentType"
             className={classes.textField}
-            onChange={handleStateChange}
             variant="outlined"
           >
             <MenuItem value="">
@@ -160,50 +309,65 @@ export default function CreateInvoice() {
         </Grid>
         <Grid item sm={4}>
           <TextField
-            data-navigation="true"
             className={classes.textField}
-            id="outlined-basic"
-            label="No1"
+            label="Phone No1"
+            value={InvoiceData.PhoneNo1}
+            onChange={handleInvoiceDataChange}
+            name="PhoneNo1"
             variant="outlined"
           />
           <TextField
-            data-navigation="true"
             className={classes.textField}
-            id="outlined-basic"
-            label="No1"
+            label="Phone No2"
+            value={InvoiceData.PhoneNo2}
+            onChange={handleInvoiceDataChange}
+            name="PhoneNo2"
             variant="outlined"
           />
           <TextField
-            data-navigation="true"
             className={classes.textField}
-            id="outlined-basic"
             label="Transport Details"
+            value={InvoiceData.TransportDetails}
+            onChange={handleInvoiceDataChange}
+            name="TransportDetails"
             variant="outlined"
             fullWidth={true}
           />
           <TextField
-            data-navigation="true"
             className={classes.textField}
-            id="outlined-basic"
             label="Remarks"
+            value={InvoiceData.Remarks}
+            onChange={handleInvoiceDataChange}
+            name="Remarks"
             variant="outlined"
             fullWidth={true}
           />
           <Button
-            data-navigation="true"
             variant="contained"
             size="large"
             color="primary"
             className={classes.button}
+            onClick={() => {
+              containerRef.current.querySelector(":focus").blur();
+              setInvoiceData((prev) => ({
+                ...prev,
+                showMerchantTable: true,
+                showMerchantCallback: onShippedToSelect,
+              }));
+            }}
           >
             Shipped To
           </Button>
           <Button
-            data-navigation="true"
             variant="contained"
             size="large"
             color="primary"
             className={classes.button}
+            onClick={() => {
+              containerRef.current.querySelector(":focus").blur();
+              setInvoiceData((prev) => ({ ...prev, showStockTable: true }));
+            }}
+            data-name="tile"
           >
             Select Tile
           </Button>
@@ -223,8 +387,8 @@ export default function CreateInvoice() {
             </TableRow>
           </TableHead>
           <TableBody>
-            {rows3.map((row) => (
-              <TableRow key={uuidv4()}>
+            {InvoiceData.TableRows.map((row, index) => (
+              <TableRow key={row.key}>
                 <TableCell component="th" scope="row">
                   {row.size}
                 </TableCell>
@@ -233,44 +397,50 @@ export default function CreateInvoice() {
                 </TableCell>
                 <TableCell>
                   <TextField
-                    data-navigation="true"
                     type="number"
-                    InputLabelProps={{
-                      shrink: true,
+                    InputProps={{ inputProps: { min: 1 } }}
+                    autoFocus={index === 0 ? true : false}
+                    onChange={(e) => {
+                      handleUpdate(index, e.target.value, "qty");
                     }}
-                    defaultValue={row.qty}
+                    onKeyDown={(e) => {
+                      handleDeleteKeyDown(e, index);
+                      handleEnterKeyDown(e, "[data-name=rate]");
+                    }}
+                    value={row.qty}
                   />
                 </TableCell>
                 <TableCell>
                   <TextField
-                    data-navigation="true"
+                    data-name="rate"
                     type="number"
-                    InputLabelProps={{
-                      shrink: true,
+                    InputProps={{ inputProps: { min: 1 } }}
+                    value={row.rate}
+                    onChange={(e) => {
+                      handleUpdate(index, e.target.value, "rate");
                     }}
-                    defaultValue={row.rate}
+                    onKeyDown={(e) => {
+                      handleDeleteKeyDown(e, index);
+                      handleEnterKeyDown(e, "[data-name=discount]");
+                    }}
                   />
                 </TableCell>
                 <TableCell component="th" scope="row">
                   <TextField
-                    data-navigation="true"
+                    data-name="discount"
                     type="number"
-                    InputLabelProps={{
-                      shrink: true,
+                    InputProps={{ inputProps: { min: 0 } }}
+                    onChange={(e) => {
+                      handleUpdate(index, e.target.value, "discount");
                     }}
-                    defaultValue={row.discount}
+                    onKeyDown={(e) => {
+                      handleDeleteKeyDown(e, index);
+                      handleEnterKeyDown(e, "[data-name=tile]");
+                    }}
+                    value={row.discount}
                   />
                 </TableCell>
-                <TableCell>
-                  <TextField
-                    data-navigation="true"
-                    type="number"
-                    InputLabelProps={{
-                      shrink: true,
-                    }}
-                    defaultValue={row.subtotal}
-                  />
-                </TableCell>
+                <TableCell>{row.subtotal} </TableCell>
                 <TableCell component="th" scope="row">
                   {row.hsn}
                 </TableCell>
@@ -282,13 +452,15 @@ export default function CreateInvoice() {
       <Table className={classes.table} stickyHeader aria-label="sticky table">
         <TableHead>
           <TableRow>
-            <TableCell align="right">Weight : 0</TableCell>
-            <TableCell align="right">Count : 0</TableCell>
-            <TableCell align="left">Total Qty : 100</TableCell>
+            <TableCell align="right">Weight : {InvoiceData.Weight}</TableCell>
+            <TableCell align="right">Count : {InvoiceData.Count}</TableCell>
+            <TableCell align="left">
+              Total Qty : {InvoiceData.TotalQty}
+            </TableCell>
             <TableCell colSpan={2} align="right">
               Total Amount
             </TableCell>
-            <TableCell align="left">100</TableCell>
+            <TableCell align="left">{InvoiceData.TotalAmount}</TableCell>
           </TableRow>
         </TableHead>
       </Table>
@@ -306,18 +478,18 @@ export default function CreateInvoice() {
         </Grid>
         <Grid item sm={4}>
           <TextField
-            data-navigation="true"
             className={classes.textField}
-            id="outlined-basic"
             label="Transport"
             variant="outlined"
+            value={InvoiceData.Transport}
+            onChange={handleInvoiceDataChange}
+            name="Transport"
             fullWidth={true}
           />
         </Grid>
 
         <Grid item sm={6} className={classes.label}>
           <Button
-            data-navigation="true"
             variant="contained"
             size="large"
             color="primary"
@@ -326,25 +498,97 @@ export default function CreateInvoice() {
             Print
           </Button>
           <Button
-            data-navigation="true"
             variant="contained"
             size="large"
             color="primary"
             className={classes.button}
+            onClick={save}
           >
             Save
           </Button>
           <Button
-            data-navigation="true"
             variant="contained"
             size="large"
             color="primary"
             className={classes.button}
+            onClick={closeModal}
           >
             Close
           </Button>
         </Grid>
       </Grid>
+      {InvoiceData.showStockTable ? (
+        <CustomModal
+          showModal={InvoiceData.showStockTable}
+          closeModal={() => {
+            setInvoiceData((prev) => ({ ...prev, showStockTable: false }));
+          }}
+          modalTitle="Stock Table"
+          ModalType={(props) => (
+            <CustomTable
+              {...{
+                columns: [
+                  "Name",
+                  "Size",
+                  "Company",
+                  "Qty",
+                  "Type",
+                  "Rate",
+                  "HNS",
+                ],
+                data: [
+                  ...dataGenerator(
+                    ["T1", "18x12", "ABC", 1000, "abs", 200, "12%"],
+                    105
+                  ),
+                ],
+                title: "Inventory",
+                isSearchEnable: true,
+                fixedHeader: true,
+                tableBodyHeight: "450px",
+                editCallback: onTileSelect,
+              }}
+            />
+          )}
+          modalWidth="60vw"
+          modalHeight="70vh"
+        ></CustomModal>
+      ) : null}
+
+      {InvoiceData.showMerchantTable ? (
+        <CustomModal
+          showModal={InvoiceData.showMerchantTable}
+          closeModal={() => {
+            setInvoiceData((prev) => ({ ...prev, showMerchantTable: false }));
+          }}
+          modalTitle="Merchant Table"
+          ModalType={(props) => (
+            <CustomTable
+              {...{
+                columns: ["Company", "Address", "Phone No1", "Phone No2"],
+                data: [
+                  ...dataGenerator(
+                    [
+                      "ABC",
+                      "asdasfasddasdas",
+                      "+912123123123",
+                      "+912123123123",
+                    ],
+                    56
+                  ),
+                ],
+                title: "Company",
+                isSearchEnable: true,
+                fixedHeader: true,
+                tableBodyHeight: "450px",
+                editCallback: InvoiceData.showMerchantCallback,
+              }}
+            />
+          )}
+          modalWidth="60vw"
+          modalHeight="70vh"
+        ></CustomModal>
+      ) : null}
     </div>
   );
 }

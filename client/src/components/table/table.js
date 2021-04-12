@@ -1,7 +1,6 @@
-import React, { useRef } from "react";
+import React, { useRef, useCallback } from "react";
 import Grid from "@material-ui/core/Grid";
 import MUIDataTable from "mui-datatables";
-import { createMuiTheme, MuiThemeProvider } from "@material-ui/core/styles";
 import useArrowNavigation from "../../hooks/useArrowNavigation";
 
 function CustomTable(props) {
@@ -30,12 +29,24 @@ function CustomTable(props) {
       // setCurrentSelectedRow(rowsSelected);
     },
   };
-  const themeWithoutTitle = createMuiTheme({
-    overrides: { MUIDataTableToolbar: { root: { display: "none" } } },
-  });
-  
+  const editCallback = useCallback(
+    (currentIndex) => {
+      if (typeof props.editCallback === "function") {
+        props.editCallback(props.data[currentIndex]);
+      }
+    },
+    [props]
+  );
+  const deleteCallback = useCallback(
+    (currentIndex) => {
+      if (typeof props.deleteCallback === "function") {
+        props.deleteCallback(props.data[currentIndex]);
+      }
+    },
+    [props]
+  );
   const outerElement = useRef(null);
-  useArrowNavigation(outerElement);
+  useArrowNavigation(outerElement, editCallback, deleteCallback);
   // const [CurrentSelectedRow, setCurrentSelectedRow] = useState(null);
   return (
     <Grid container ref={outerElement}>

@@ -30,6 +30,27 @@ const useStyles = makeStyles((theme) => ({
 export default function ManageSize() {
   const classes = useStyles();
   const containerRef = useRef(null);
+  const [SizeData, setSizeData] = useState({
+    TableData: [],
+    Size: "",
+  });
+  const handleSizeDataChange = (event) => {
+    setSizeData((prev) => ({
+      ...prev,
+      [event.target.name]: event.target.value,
+    }));
+  };
+  const save = () => {
+    console.log(SizeData);
+  };
+  const handleAddSize = () => {
+    save();
+    setSizeData((prev) => ({
+      ...prev,
+      TableData: [[prev.Size], ...prev.TableData],
+      Size: "",
+    }));
+  };
   useEnterNavigation(containerRef);
   return (
     <div ref={containerRef}>
@@ -44,20 +65,23 @@ export default function ManageSize() {
             data-navigation="true"
             autoFocus={true}
             className={classes.textField}
-            id="outlined-basic"
+            value={SizeData.Size}
+            onChange={handleSizeDataChange}
+            name="Size"
             label="Size"
             variant="outlined"
             margin="normal"
             fullWidth={true}
           />
         </Grid>
-        <Grid item sm={3}>
+        <Grid item sm={6}>
           <Button
             data-navigation="true"
             variant="contained"
             size="large"
             color="primary"
             className={classes.Typebutton}
+            onClick={handleAddSize}
           >
             ADD
           </Button>
@@ -71,22 +95,7 @@ export default function ManageSize() {
           fixedHeader: true,
           tableBodyHeight: "500px",
           selectableRows: "none",
-          data: [
-            ["10x10"],
-            ["10x10"],
-            ["10x10"],
-            ["10x10"],
-            ["10x10"],
-            ["10x10"],
-            ["10x10"],
-            ["10x10"],
-            ["10x10"],
-            ["10x10"],
-            ["10x10"],
-            ["10x10"],
-            ["10x10"],
-            ["10x10"],
-          ],
+          data: SizeData.TableData,
         }}
       ></CustomTable>
     </div>

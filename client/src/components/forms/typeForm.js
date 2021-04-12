@@ -30,6 +30,27 @@ const useStyles = makeStyles((theme) => ({
 export default function ManageType() {
   const classes = useStyles();
   const containerRef = useRef(null);
+  const [TypeData, setTypeData] = useState({
+    TableData: [],
+    Type: "",
+  });
+  const handleTypeDataChange = (event) => {
+    setTypeData((prev) => ({
+      ...prev,
+      [event.target.name]: event.target.value,
+    }));
+  };
+  const save = () => {
+    console.log(TypeData);
+  };
+  const handleAddType = () => {
+    save();
+    setTypeData((prev) => ({
+      ...prev,
+      TableData: [[prev.Type], ...prev.TableData],
+      Type: "",
+    }));
+  };
   useEnterNavigation(containerRef);
   return (
     <div ref={containerRef}>
@@ -41,23 +62,26 @@ export default function ManageType() {
         </Grid>
         <Grid item sm={3}>
           <TextField
-            autoFocus={true}
             data-navigation="true"
+            autoFocus={true}
             className={classes.textField}
-            id="outlined-basic"
+            value={TypeData.Type}
+            onChange={handleTypeDataChange}
+            name="Type"
             label="Type"
             variant="outlined"
             margin="normal"
             fullWidth={true}
           />
         </Grid>
-        <Grid item sm={3} alignItems="right">
+        <Grid item sm={6}>
           <Button
             data-navigation="true"
             variant="contained"
-            size="large"
+            Type="large"
             color="primary"
             className={classes.Typebutton}
+            onClick={handleAddType}
           >
             ADD
           </Button>
@@ -71,22 +95,7 @@ export default function ManageType() {
           fixedHeader: true,
           tableBodyHeight: "500px",
           selectableRows: "none",
-          data: [
-            ["type1"],
-            ["type1"],
-            ["type1"],
-            ["type1"],
-            ["type1"],
-            ["type1"],
-            ["type1"],
-            ["type1"],
-            ["type1"],
-            ["type1"],
-            ["type1"],
-            ["type1"],
-            ["type1"],
-            ["type1"],
-          ],
+          data: TypeData.TableData,
         }}
       ></CustomTable>
     </div>

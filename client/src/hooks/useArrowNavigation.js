@@ -1,5 +1,5 @@
 import { useEffect, useCallback } from "react";
-const useArrowNavigation = (containerRef) => {
+const useArrowNavigation = (containerRef, editCallBack, deleteCallback) => {
   const handleKeyDown = useCallback(
     (e) => {
       var allArrowNavigation = containerRef.current.querySelectorAll(
@@ -24,8 +24,15 @@ const useArrowNavigation = (containerRef) => {
             : allArrowNavigation[currentIndex + 1];
       }
       if (nextElement) nextElement.focus();
+
+      if (e.which === 13 && typeof editCallBack === "function") {
+        editCallBack(currentIndex);
+      }
+      if (e.which === 46 && typeof deleteCallback === "function") {
+        deleteCallback(currentIndex);
+      }
     },
-    [containerRef]
+    [containerRef, editCallBack, deleteCallback]
   );
   useEffect(() => {
     const container = containerRef.current;

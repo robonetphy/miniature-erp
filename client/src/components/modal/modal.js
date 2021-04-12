@@ -47,7 +47,13 @@ function CustomModal({
         </Typography>
         <Divider />
         {/* <ModalExample /> */}
-        {<ModalType />}
+        {
+          <ModalType
+            closeModal={() => {
+              closeModal();
+            }}
+          />
+        }
       </div>
     </Modal>
   );
