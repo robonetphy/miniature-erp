@@ -75,6 +75,9 @@ export default function Layout() {
         ModalType: CreatePurchase,
         modalWidth: "100vw",
         modalHeight: "99vh",
+        ModalTypeData: {
+          mode: "Edit",
+        },
       },
       Stock: {
         showModal: true,
@@ -168,6 +171,336 @@ export default function Layout() {
     const data = { ...ModalData[type], key: uuidv4() };
     setModalStack((oldStack) => [...oldStack, data]);
   }, []);
+
+  const editModalStackPush = useCallback((type) => {
+    //fetch data
+    const ModalData = {
+      Purchase: {
+        showModal: true,
+        closeModal: modalStackPop,
+        modalTitle: "Edit Purchase",
+        ModalType: CreatePurchase,
+        modalWidth: "100vw",
+        modalHeight: "99vh",
+        ModalTypeData: {
+          mode: "Edit",
+          Date: "2021-04-02",
+          Title: "Edit Purchase",
+          Remarks: "Nothing",
+          TotalQty: 10,
+          TotalAmount: 1000,
+          TableRows: [
+            {
+              name: "Abc",
+              qty: 10,
+              rate: 100,
+              amount: 1000,
+              key: uuidv4(),
+            },
+          ],
+        },
+      },
+      Stock: {
+        showModal: true,
+        closeModal: modalStackPop,
+        modalTitle: "Edit Stock",
+        ModalType: CreateStock,
+        modalWidth: "40vw",
+        modalHeight: "65vh",
+        ModalTypeData: {
+          mode: "Edit",
+          Size: "12X12",
+          Type: "AXZ",
+          HSN: "12",
+          Name: "proxitile",
+          Rate: 100,
+          Company: "ABC",
+          initialQty: 0,
+        },
+      },
+      Company: {
+        showModal: true,
+        closeModal: modalStackPop,
+        modalTitle: "Edit Company",
+        ModalType: CreateCompany,
+        modalWidth: "40vw",
+        modalHeight: "40vh",
+        ModalTypeData: {
+          mode: "Edit",
+          Company: "ABX",
+          Address: "asdaksjflka lknlaklaskna klnlask",
+          PhoneNo: "+124819028019",
+        },
+      },
+      Breakage: {
+        showModal: true,
+        closeModal: modalStackPop,
+        modalTitle: "Edit Breakage",
+        ModalType: CreateBreakage,
+        modalWidth: "100vw",
+        modalHeight: "99vh",
+        ModalTypeData: {
+          mode: "Edit",
+          Remarks: "Nothing",
+          TotalQty: 12,
+          TotalAmount: 120,
+          TotalItem: 1,
+          TableRows: [
+            {
+              size: "12x12",
+              product: "asda",
+              company: "afsa",
+              type: "asfas",
+              qty: 12,
+              rate: 10,
+              subtotal: 120,
+              key: uuidv4(),
+            },
+          ],
+        },
+      },
+      Return: {
+        showModal: true,
+        closeModal: modalStackPop,
+        modalTitle: "Edit Return",
+        ModalType: CreateReturn,
+        modalWidth: "100vw",
+        modalHeight: "99vh",
+        ModalTypeData: {
+          mode: "Edit",
+          Remarks: "nothing",
+          TotalQty: 10,
+          TotalAmount: 120,
+          TotalItem: 1,
+          MerchantName: "sdasdasdas",
+          Date: "2021-04-02",
+          Address: "asfag as agdsa fas fasd",
+          PhoneNo1: "+444646465464",
+          PhoneNo2: "+4654646464",
+          LastReturn: "R-12",
+          TableRows: [
+            {
+              size: "12x12",
+              product: "asda",
+              company: "afsa",
+              type: "asfas",
+              qty: 12,
+              rate: 10,
+              subtotal: 120,
+              key: uuidv4(),
+            },
+          ],
+        },
+      },
+      Merchant: {
+        showModal: true,
+        closeModal: modalStackPop,
+        modalTitle: "Edit Merchant",
+        ModalType: AddMerchant,
+        modalWidth: "40vw",
+        modalHeight: "75vh",
+        ModalTypeData: {
+          mode: "Edit",
+          Name: "asd fd",
+          Address: "asdalksflka nklnflkajsl",
+          PhoneNo1: "+78312312",
+          PhoneNo2: "+464646464646",
+          Email: "asda@afamslk.com",
+          PANNo: "ASDASDd12123",
+          State: 10,
+          GSTIN: "asdaasda",
+        },
+      },
+      Invoice: {
+        showModal: true,
+        closeModal: modalStackPop,
+        modalTitle: "Edit Invoice",
+        ModalType: CreateInvoice,
+        modalWidth: "100vw",
+        modalHeight: "99vh",
+        ModalTypeData: {
+          mode: "Edit",
+          Remarks: "Nothing",
+          TotalQty: 120,
+          TotalAmount: 12000,
+          Count: 1,
+          TableRows: [
+            {
+              size: "123x123",
+              product: "asdasda",
+              qty: 120,
+              rate: 100,
+              hsn: 12,
+              discount: 0,
+              subtotal: 12000,
+              key: uuidv4(),
+            },
+          ],
+          MerchantName: "asdasd",
+          Date: "2021-04-02",
+          Address: "asdasdasdas",
+          PhoneNo1: "86784684684",
+          PhoneNo2: "4444646546",
+          State: 10,
+          PaymentType: 10,
+          TransportDetails: "Airplane",
+          Transport: "Nothing",
+          Weight: 0,
+          ShippedTo: {},
+          GSTIN: "asdasdasd",
+        },
+      },
+    };
+    if (ModalData[type]) {
+      const data = { ...ModalData[type], key: uuidv4() };
+      setModalStack((oldStack) => [...oldStack, data]);
+    }
+  }, []);
+  const deleteModalStackPush = useCallback((type) => {
+    //fetch data
+    const ModalData = {
+      Purchase: {
+        showModal: true,
+        closeModal: modalStackPop,
+        modalTitle: "Delete Purchase",
+        ModalType: CreatePurchase,
+        modalWidth: "100vw",
+        modalHeight: "99vh",
+        ModalTypeData: {
+          mode: "Delete",
+          Date: "2021-04-02",
+          Title: "Edit Purchase",
+          Remarks: "Nothing",
+          TotalQty: 10,
+          TotalAmount: 1000,
+          TableRows: [
+            {
+              name: "Abc",
+              qty: 10,
+              rate: 100,
+              amount: 1000,
+              key: uuidv4(),
+            },
+          ],
+        },
+      },
+      Stock: {
+        showModal: true,
+        closeModal: modalStackPop,
+        modalTitle: "Delete Stock",
+        ModalType: CreateStock,
+        modalWidth: "40vw",
+        modalHeight: "65vh",
+        ModalTypeData: {
+          mode: "Delete",
+          Size: "12X12",
+          Type: "AXZ",
+          HSN: "12",
+          Name: "proxitile",
+          Rate: 100,
+          Company: "ABC",
+          initialQty: 0,
+        },
+      },
+      Company: {
+        showModal: true,
+        closeModal: modalStackPop,
+        modalTitle: "Delete Company",
+        ModalType: CreateCompany,
+        modalWidth: "40vw",
+        modalHeight: "40vh",
+        ModalTypeData: {
+          mode: "Delete",
+          Company: "ABX",
+          Address: "asdaksjflka lknlaklaskna klnlask",
+          PhoneNo: "+124819028019",
+        },
+      },
+      Breakage: {
+        showModal: true,
+        closeModal: modalStackPop,
+        modalTitle: "Delete Breakage",
+        ModalType: CreateBreakage,
+        modalWidth: "100vw",
+        modalHeight: "99vh",
+        ModalTypeData: {
+          mode: "Delete",
+          Remarks: "Nothing",
+          TotalQty: 12,
+          TotalAmount: 120,
+          TotalItem: 1,
+          TableRows: [
+            {
+              size: "12x12",
+              product: "asda",
+              company: "afsa",
+              type: "asfas",
+              qty: 12,
+              rate: 10,
+              subtotal: 120,
+              key: uuidv4(),
+            },
+          ],
+        },
+      },
+      Return: {
+        showModal: true,
+        closeModal: modalStackPop,
+        modalTitle: "Delete Return",
+        ModalType: CreateReturn,
+        modalWidth: "100vw",
+        modalHeight: "99vh",
+        ModalTypeData: {
+          mode: "Delete",
+          Remarks: "nothing",
+          TotalQty: 10,
+          TotalAmount: 120,
+          TotalItem: 1,
+          MerchantName: "sdasdasdas",
+          Date: "2021-04-02",
+          Address: "asfag as agdsa fas fasd",
+          PhoneNo1: "+444646465464",
+          PhoneNo2: "+4654646464",
+          LastReturn: "R-12",
+          TableRows: [
+            {
+              size: "12x12",
+              product: "asda",
+              company: "afsa",
+              type: "asfas",
+              qty: 12,
+              rate: 10,
+              subtotal: 120,
+              key: uuidv4(),
+            },
+          ],
+        },
+      },
+      Merchant: {
+        showModal: true,
+        closeModal: modalStackPop,
+        modalTitle: "Delete Merchant",
+        ModalType: AddMerchant,
+        modalWidth: "40vw",
+        modalHeight: "75vh",
+        ModalTypeData: {
+          mode: "Delete",
+          Name: "asd fd",
+          Address: "asdalksflka nklnflkajsl",
+          PhoneNo1: "+78312312",
+          PhoneNo2: "+464646464646",
+          Email: "asda@afamslk.com",
+          PANNo: "ASDASDd12123",
+          State: 10,
+          GSTIN: "asdaasda",
+        },
+      },
+    };
+    if (ModalData[type]) {
+      const data = { ...ModalData[type], key: uuidv4() };
+      setModalStack((oldStack) => [...oldStack, data]);
+    }
+  }, []);
   const handleKeyEvent = useCallback(
     (e, message) => {
       console.log(message);
@@ -208,13 +541,27 @@ export default function Layout() {
         <main className={classes.content}>
           <Toolbar />
           <Switch>
-            {routes.map(({ path, Component, data }) => {
+            {routes.map(({ path, Component, data, TableName }) => {
               return (
                 <Route
                   path={path}
                   exact
                   key={uuidv4()}
-                  render={(props) => React.createElement(Component, data)}
+                  render={(props) =>
+                    React.createElement(Component, {
+                      ...data,
+                      editCallback: (selectedData) => {
+                        console.log("EditCallback");
+                        console.log(selectedData);
+                        editModalStackPush(TableName);
+                      },
+                      deleteCallback: (data) => {
+                        console.log("deleteCallback");
+                        console.log(data);
+                        deleteModalStackPush(TableName);
+                      },
+                    })
+                  }
                 />
               );
             })}
@@ -222,7 +569,7 @@ export default function Layout() {
           </Switch>
         </main>
       </div>
-      {ModalStack ? ModalStack.map((item) => <CustomModal {...item}/>) : null}
+      {ModalStack ? ModalStack.map((item) => <CustomModal {...item} />) : null}
     </Router>
   );
 }

@@ -43,16 +43,16 @@ const useStyles = makeStyles((theme) => ({
   },
 }));
 
-export default function CreatePurchase({ closeModal }) {
+export default function CreatePurchase(props) {
   const classes = useStyles();
   const containerRef = useRef(null);
   const [PurchaseData, setPurchaseData] = useState({
-    Date: new Date().toISOString().substring(0, 10),
-    Title: "",
-    Remarks: "",
-    TotalQty: 0,
-    TotalAmount: 0,
-    TableRows: [],
+    Date: props.Date ?? new Date().toISOString().substring(0, 10),
+    Title: props.Title ?? "",
+    Remarks: props.Remarks ?? "",
+    TotalQty: props.TotalQty ?? 0,
+    TotalAmount: props.TotalAmount ?? 0,
+    TableRows: props.TableRows ?? [],
     showStockTable: false,
   });
   const save = () => {
@@ -102,7 +102,7 @@ export default function CreatePurchase({ closeModal }) {
   };
   const saveAndClose = (e) => {
     save();
-    closeModal();
+    props.closeModal();
   };
   const saveAndAgain = (e) => {
     save();
@@ -303,15 +303,17 @@ export default function CreatePurchase({ closeModal }) {
           />
         </Grid>
         <Grid item sm={7} className={classes.label}>
-          <Button
-            variant="contained"
-            size="large"
-            color="primary"
-            className={classes.button}
-            onClick={saveAndAgain}
-          >
-            Save &#38; Again
-          </Button>
+          {props.mode === undefined ? (
+            <Button
+              variant="contained"
+              size="large"
+              color="primary"
+              className={classes.button}
+              onClick={saveAndAgain}
+            >
+              Save &#38; Again
+            </Button>
+          ) : null}
           <Button
             variant="contained"
             size="large"
@@ -319,14 +321,14 @@ export default function CreatePurchase({ closeModal }) {
             className={classes.button}
             onClick={saveAndClose}
           >
-            Save &#38; Close
+            {props.mode ?? "Save"} &#38; Close
           </Button>
           <Button
             variant="contained"
             size="large"
             color="primary"
             className={classes.button}
-            onClick={closeModal}
+            onClick={props.closeModal}
           >
             Close
           </Button>

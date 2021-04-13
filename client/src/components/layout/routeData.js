@@ -18,11 +18,12 @@ export const routes = [
         ...dataGenerator(["12-2-2021", "Title1", 100, 1000, "Firstone"], 42),
       ],
       title: "Purchase",
-      isSearchEnable: true,      
+      isSearchEnable: true,
       fixedHeader: true,
       tableBodyHeight: "600px",
     },
     path: "/purchase",
+    TableName: "Purchase",
   },
   {
     Component: CustomTable,
@@ -37,6 +38,7 @@ export const routes = [
       tableBodyHeight: "600px",
     },
     path: "/inventory",
+    TableName: "Stock",
   },
   {
     Component: CustomTable,
@@ -49,6 +51,7 @@ export const routes = [
       tableBodyHeight: "600px",
     },
     path: "/company",
+    TableName: "Company",
   },
   {
     Component: CustomTable,
@@ -72,6 +75,7 @@ export const routes = [
       tableBodyHeight: "600px",
     },
     path: "/merchant",
+    TableName: "Merchant",
   },
   {
     Component: CustomTable,
@@ -89,6 +93,45 @@ export const routes = [
       tableBodyHeight: "600px",
     },
     path: "/invoice",
+    TableName: "Invoice",
+  },
+  {
+    Component: CustomTable,
+    data: {
+      columns: ["Name", "Qty", "Type", "Remarks"],
+      data: [...dataGenerator(["123123", 123, 312, "hi there"], 56)],
+      title: "Breakage",
+      isSearchEnable: true,
+      fixedHeader: true,
+      tableBodyHeight: "600px",
+    },
+    path: "/breakage",
+    TableName: "Breakage",
+  },
+  {
+    Component: CustomTable,
+    data: {
+      columns: [
+        "RI No",
+        "Date",
+        "Merchant",
+        "Total Qty",
+        "Total Amount",
+        "Remarks",
+      ],
+      data: [
+        ...dataGenerator(
+          ["123123", "21-12-2021", "ABC", 123, 312, "hi there"],
+          54
+        ),
+      ],
+      title: "Return",
+      isSearchEnable: true,
+      fixedHeader: true,
+      tableBodyHeight: "600px",
+    },
+    path: "/return",
+    TableName: "Return",
   },
 ];
 

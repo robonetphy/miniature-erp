@@ -45,31 +45,31 @@ const useStyles = makeStyles((theme) => ({
   },
 }));
 
-export default function CreateInvoice({ closeModal }) {
+export default function CreateInvoice(props) {
   const classes = useStyles();
   const containerRef = useRef(null);
   // useEnterNavigation(containerRef);
   const [InvoiceData, setInvoiceData] = useState({
-    Remarks: "",
-    TotalQty: 0,
-    TotalAmount: 0,
-    Count: 0,
-    TableRows: [],
+    Remarks: props.Remarks ?? "",
+    TotalQty: props.TotalQty ?? 0,
+    TotalAmount: props.TotalAmount ?? 0,
+    Count: props.Count ?? 0,
+    TableRows: props.TableRows ?? [],
+    MerchantName: props.MerchantName ?? "",
+    Date: props.Date ?? new Date().toISOString().substring(0, 10),
+    Address: props.Address ?? "",
+    PhoneNo1: props.PhoneNo1 ?? "",
+    PhoneNo2: props.PhoneNo2 ?? "",
+    State: props.State ?? "",
+    PaymentType: props.PaymentType ?? "",
+    TransportDetails: props.TransportDetails ?? "",
+    Transport: props.Transport ?? "",
+    Weight: props.Weight ?? 0,
+    ShippedTo: props.ShippedTo ?? {},
+    GSTIN: props.GSTIN ?? "",
     showMerchantTable: false,
     showStockTable: false,
     showMerchantCallback: null,
-    MerchantName: "",
-    Date: new Date().toISOString().substring(0, 10),
-    Address: "",
-    PhoneNo1: "",
-    PhoneNo2: "",
-    State: "",
-    PaymentType: "",
-    TransportDetails: "",
-    Transport: "",
-    Weight: 0,
-    ShippedTo: {},
-    GSTIN: "",
   });
   const save = () => {
     //Send Data to Server
@@ -504,14 +504,14 @@ export default function CreateInvoice({ closeModal }) {
             className={classes.button}
             onClick={save}
           >
-            Save
+            {props.mode ?? "Save"}
           </Button>
           <Button
             variant="contained"
             size="large"
             color="primary"
             className={classes.button}
-            onClick={closeModal}
+            onClick={props.closeModal}
           >
             Close
           </Button>

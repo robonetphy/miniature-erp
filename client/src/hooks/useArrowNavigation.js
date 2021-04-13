@@ -12,12 +12,14 @@ const useArrowNavigation = (containerRef, editCallBack, deleteCallback) => {
         if (currentFocus.isSameNode(element)) currentIndex = index;
       });
       if (e.which === 38) {
+        currentIndex = currentIndex ?? 0;
         nextElement =
           currentIndex - 1 === -1
             ? allArrowNavigation[0]
             : allArrowNavigation[currentIndex - 1];
       }
       if (e.which === 40) {
+        currentIndex = currentIndex ?? -1;
         nextElement =
           currentIndex + 1 === allArrowNavigation.length
             ? allArrowNavigation[allArrowNavigation.length - 1]

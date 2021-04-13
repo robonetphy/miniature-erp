@@ -31,17 +31,17 @@ const useStyles = makeStyles((theme) => ({
   },
 }));
 
-export default function AddMerchant({ closeModal }) {
+export default function AddMerchant(props) {
   const classes = useStyles();
   const [MerchantData, setMerchantData] = useState({
-    Name: "",
-    Address: "",
-    PhoneNo1: "",
-    PhoneNo2: "",
-    Email: "",
-    PANNo: "",
-    State: "",
-    GSTIN: "",
+    Name: props.Name ?? "",
+    Address: props.Address ?? "",
+    PhoneNo1: props.PhoneNo1 ?? "",
+    PhoneNo2: props.PhoneNo2 ?? "",
+    Email: props.Email ?? "",
+    PANNo: props.PANNo ?? "",
+    State: props.State ?? "",
+    GSTIN: props.GSTIN ?? "",
   });
 
   const save = () => {
@@ -62,7 +62,7 @@ export default function AddMerchant({ closeModal }) {
   };
   const saveAndClose = (e) => {
     save();
-    closeModal();
+    props.closeModal();
   };
   const saveAndAgain = (e) => {
     save();
@@ -200,15 +200,17 @@ export default function AddMerchant({ closeModal }) {
         />
       </Grid>
       <Grid item sm={12} style={{ textAlignLast: "right" }}>
-        <Button
-          variant="contained"
-          size="large"
-          color="primary"
-          className={classes.button}
-          onClick={saveAndAgain}
-        >
-          Save &#38; Again
-        </Button>
+        {props.mode === undefined ? (
+          <Button
+            variant="contained"
+            size="large"
+            color="primary"
+            className={classes.button}
+            onClick={saveAndAgain}
+          >
+            Save &#38; Again
+          </Button>
+        ) : null}
         <Button
           variant="contained"
           size="large"
@@ -216,16 +218,14 @@ export default function AddMerchant({ closeModal }) {
           className={classes.button}
           onClick={saveAndClose}
         >
-          Save &#38; Close
+          {props.mode ?? "Save"}&#38; Close
         </Button>
         <Button
           variant="contained"
           size="large"
           color="primary"
           className={classes.button}
-          onClick={() => {
-            closeModal();
-          }}
+          onClick={props.closeModal}
         >
           Close
         </Button>

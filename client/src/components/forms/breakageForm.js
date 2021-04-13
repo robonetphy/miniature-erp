@@ -46,15 +46,15 @@ const useStyles = makeStyles((theme) => ({
   },
 }));
 
-export default function CreateBreakage({ closeModal }) {
+export default function CreateBreakage(props) {
   const classes = useStyles();
   const containerRef = useRef(null);
   const [BreakageData, setBreakageData] = useState({
-    Remarks: "",
-    TotalQty: 0,
-    TotalAmount: 0,
-    TotalItem: 0,
-    TableRows: [],
+    Remarks: props.Remarks ?? "",
+    TotalQty: props.TotalQty ?? 0,
+    TotalAmount: props.TotalAmount ?? 0,
+    TotalItem: props.TotalItem ?? 0,
+    TableRows: props.TableRows ?? [],
     showStockTable: false,
   });
   const save = () => {
@@ -108,7 +108,7 @@ export default function CreateBreakage({ closeModal }) {
   };
   const saveAndClose = (e) => {
     save();
-    closeModal();
+    props.closeModal();
   };
   const saveAndAgain = (e) => {
     save();
@@ -301,15 +301,17 @@ export default function CreateBreakage({ closeModal }) {
           >
             Print &#38; Save
           </Button>
-          <Button
-            variant="contained"
-            size="large"
-            color="primary"
-            className={classes.button}
-            onClick={saveAndAgain}
-          >
-            Save &#38; Again
-          </Button>
+          {props.mode === undefined ? (
+            <Button
+              variant="contained"
+              size="large"
+              color="primary"
+              className={classes.button}
+              onClick={saveAndAgain}
+            >
+              Save &#38; Again
+            </Button>
+          ) : null}
           <Button
             variant="contained"
             size="large"
@@ -317,14 +319,14 @@ export default function CreateBreakage({ closeModal }) {
             className={classes.button}
             onClick={saveAndClose}
           >
-            Save &#38; Close
+            {props.mode ?? "Save"} &#38; Close
           </Button>
           <Button
             variant="contained"
             size="large"
             color="primary"
             className={classes.button}
-            onClick={closeModal}
+            onClick={props.closeModal}
           >
             Close
           </Button>

@@ -40,16 +40,16 @@ const useStyles = makeStyles((theme) => ({
   },
 }));
 
-export default function CreateStock({ closeModal }) {
+export default function CreateStock(props) {
   const classes = useStyles();
   const [StockData, setStockData] = useState({
-    Size: "",
-    Type: "",
-    HSN: "",
-    Name: "",
-    Rate: "",
-    Company: "",
-    initialQty: 0,
+    Size: props.Size ?? "",
+    Type: props.Type ?? "",
+    HSN: props.HSN ?? "",
+    Name: props.Name ?? "",
+    Rate: props.Rate ?? "",
+    Company: props.Company ?? "",
+    initialQty: props.initialQty ?? 0,
     showCompanyTable: false,
   });
 
@@ -81,7 +81,7 @@ export default function CreateStock({ closeModal }) {
   };
   const saveAndClose = (e) => {
     save();
-    closeModal();
+    props.closeModal();
   };
   const saveAndAgain = (e) => {
     save();
@@ -205,15 +205,17 @@ export default function CreateStock({ closeModal }) {
           </Select>
         </Grid>
         <Grid item sm={12} style={{ textAlignLast: "right" }}>
-          <Button
-            variant="contained"
-            size="large"
-            color="primary"
-            className={classes.button}
-            onClick={saveAndAgain}
-          >
-            Save &#38; Again
-          </Button>
+          {props.mode === undefined ? (
+            <Button
+              variant="contained"
+              size="large"
+              color="primary"
+              className={classes.button}
+              onClick={saveAndAgain}
+            >
+              Save &#38; Again
+            </Button>
+          ) : null}
           <Button
             variant="contained"
             size="large"
@@ -221,7 +223,7 @@ export default function CreateStock({ closeModal }) {
             className={classes.button}
             onClick={saveAndClose}
           >
-            Save &#38; Close
+            {props.mode ?? "Save"} &#38; Close
           </Button>
           <Button
             variant="contained"
@@ -229,7 +231,7 @@ export default function CreateStock({ closeModal }) {
             color="primary"
             className={classes.button}
             onClick={() => {
-              closeModal();
+              props.closeModal();
             }}
           >
             Close

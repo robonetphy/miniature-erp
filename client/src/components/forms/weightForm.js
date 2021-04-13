@@ -96,6 +96,7 @@ export default function ManageWeight() {
     console.log(WeightData);
   };
   const addWeight = () => {
+    save();
     setWeightData((prev) => {
       return {
         ...prev,

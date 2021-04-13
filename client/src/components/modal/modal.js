@@ -26,6 +26,7 @@ function CustomModal({
   ModalType,
   modalWidth,
   modalHeight,
+  ModalTypeData,
 }) {
   const classes = useStyles({ modalWidth, modalHeight });
   const rootRef = React.useRef(null);
@@ -47,13 +48,7 @@ function CustomModal({
         </Typography>
         <Divider />
         {/* <ModalExample /> */}
-        {
-          <ModalType
-            closeModal={() => {
-              closeModal();
-            }}
-          />
-        }
+        {<ModalType closeModal={closeModal} {...ModalTypeData} />}
       </div>
     </Modal>
   );

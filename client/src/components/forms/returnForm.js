@@ -48,24 +48,24 @@ const useStyles = makeStyles((theme) => ({
   },
 }));
 
-export default function CreateReturn({ closeModal }) {
+export default function CreateReturn(props) {
   const classes = useStyles();
   const containerRef = useRef(null);
   // useEnterNavigation(containerRef);
   const [ReturnData, setReturnData] = useState({
-    Remarks: "",
-    TotalQty: 0,
-    TotalAmount: 0,
-    TotalItem: 0,
-    TableRows: [],
+    Remarks: props.Remarks ?? "",
+    TotalQty: props.TotalQty ?? 0,
+    TotalAmount: props.TotalAmount ?? 0,
+    TotalItem: props.TotalItem ?? 0,
+    TableRows: props.TableRows ?? [],
+    MerchantName: props.MerchantName ?? "",
+    Date: props.Date ?? new Date().toISOString().substring(0, 10),
+    Address: props.Address ?? "",
+    PhoneNo1: props.PhoneNo1 ?? "",
+    PhoneNo2: props.PhoneNo2 ?? "",
+    LastReturn: props.LastReturn ?? "R-1",
     showMerchantTable: false,
     showStockTable: false,
-    MerchantName: "",
-    Date: new Date().toISOString().substring(0, 10),
-    Address: "",
-    PhoneNo1: "",
-    PhoneNo2: "",
-    LastReturn: "R-1",
   });
   const save = () => {
     //Send Data to Server
@@ -139,7 +139,7 @@ export default function CreateReturn({ closeModal }) {
   };
   const saveAndClose = (e) => {
     save();
-    closeModal();
+    props.closeModal();
   };
   const saveAndAgain = (e) => {
     save();
@@ -410,15 +410,17 @@ export default function CreateReturn({ closeModal }) {
           >
             Print &#38; Save
           </Button>
-          <Button
-            variant="contained"
-            size="large"
-            color="primary"
-            className={classes.button}
-            onClick={saveAndAgain}
-          >
-            Save &#38; Again
-          </Button>
+          {props.mode === undefined ? (
+            <Button
+              variant="contained"
+              size="large"
+              color="primary"
+              className={classes.button}
+              onClick={saveAndAgain}
+            >
+              Save &#38; Again
+            </Button>
+          ) : null}
           <Button
             variant="contained"
             size="large"
@@ -426,14 +428,14 @@ export default function CreateReturn({ closeModal }) {
             className={classes.button}
             onClick={saveAndClose}
           >
-            Save &#38; Close
+            {props.mode ?? "Save"} &#38; Close
           </Button>
           <Button
             variant="contained"
             size="large"
             color="primary"
             className={classes.button}
-            onClick={closeModal}
+            onClick={props.closeModal}
           >
             Close
           </Button>

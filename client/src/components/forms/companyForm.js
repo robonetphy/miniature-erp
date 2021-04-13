@@ -24,13 +24,13 @@ const useStyles = makeStyles((theme) => ({
   },
 }));
 
-export default function CreateCompany({ closeModal }) {
+export default function CreateCompany(props) {
   const classes = useStyles();
   const containerRef = useRef(null);
   const [CompanyData, setCompanyData] = useState({
-    Company: "",
-    Address: "",
-    PhoneNo: "",
+    Company: props.Company ?? "",
+    Address: props.Address ?? "",
+    PhoneNo: props.PhoneNo ?? "",
   });
 
   const save = () => {
@@ -46,7 +46,7 @@ export default function CreateCompany({ closeModal }) {
   };
   const saveAndClose = (e) => {
     save();
-    closeModal();
+    props.closeModal();
   };
   const saveAndAgain = (e) => {
     save();
@@ -113,15 +113,18 @@ export default function CreateCompany({ closeModal }) {
         />
       </Grid>
       <Grid item sm={12} style={{ textAlignLast: "right" }}>
-        <Button
-          variant="contained"
-          size="large"
-          color="primary"
-          className={classes.button}
-          onClick={saveAndAgain}
-        >
-          Save &#38; Again
-        </Button>
+        {props.mode === undefined ? (
+          <Button
+            variant="contained"
+            size="large"
+            color="primary"
+            className={classes.button}
+            onClick={saveAndAgain}
+          >
+            Save &#38; Again
+          </Button>
+        ) : null}
+
         <Button
           variant="contained"
           size="large"
@@ -129,16 +132,14 @@ export default function CreateCompany({ closeModal }) {
           className={classes.button}
           onClick={saveAndClose}
         >
-          Save &#38; Close
+          {props.mode ?? "Save"} &#38; Close
         </Button>
         <Button
           variant="contained"
           size="large"
           color="primary"
           className={classes.button}
-          onClick={() => {
-            closeModal();
-          }}
+          onClick={props.closeModal}
         >
           Close
         </Button>
