@@ -75,9 +75,6 @@ export default function Layout() {
         ModalType: CreatePurchase,
         modalWidth: "100vw",
         modalHeight: "99vh",
-        ModalTypeData: {
-          mode: "Edit",
-        },
       },
       Stock: {
         showModal: true,
@@ -168,8 +165,24 @@ export default function Layout() {
         modalHeight: "99vh",
       },
     };
-    const data = { ...ModalData[type], key: uuidv4() };
-    setModalStack((oldStack) => [...oldStack, data]);
+    setModalStack((oldStack) => {
+      const isModalExist = oldStack.filter(
+        (item) => item.modalTitle === ModalData[type].modalTitle
+      );
+      const remainData = oldStack.filter(
+        (item) => item.modalTitle !== ModalData[type].modalTitle
+      );
+      let newStack = [...remainData];
+      if (isModalExist.length) {
+        newStack = [...newStack, ...isModalExist];
+      } else {
+        newStack = [...newStack, { ...ModalData[type], key: uuidv4() }];
+      }
+      console.log(isModalExist);
+      console.log(remainData);
+      console.log(newStack);
+      return [...newStack];
+    });
   }, []);
 
   const editModalStackPush = useCallback((type) => {
@@ -534,9 +547,7 @@ export default function Layout() {
           }}
         >
           <Toolbar />
-          {/* <div className={classes.drawerContainer}> */}
           <Navigation></Navigation>
-          {/* </div> */}
         </Drawer>
         <main className={classes.content}>
           <Toolbar />

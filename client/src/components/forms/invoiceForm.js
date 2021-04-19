@@ -15,16 +15,8 @@ import {
   Typography,
   makeStyles,
 } from "@material-ui/core";
-import CustomModal from "../modal";
-import CustomTable from "../table";
 import { v4 as uuidv4 } from "uuid";
-const dataGenerator = (data, length) => {
-  var dummy = [];
-  for (var i = 0; i < length; i++) {
-    dummy.push(data);
-  }
-  return dummy;
-};
+import { StockTable, MerchantTable } from "../customTables";
 const useStyles = makeStyles((theme) => ({
   textField: {
     margin: "1% 2%",
@@ -518,76 +510,23 @@ export default function CreateInvoice(props) {
         </Grid>
       </Grid>
       {InvoiceData.showStockTable ? (
-        <CustomModal
-          showModal={InvoiceData.showStockTable}
+        <StockTable
+          showStockTable={InvoiceData.showStockTable}
           closeModal={() => {
             setInvoiceData((prev) => ({ ...prev, showStockTable: false }));
           }}
-          modalTitle="Stock Table"
-          ModalType={(props) => (
-            <CustomTable
-              {...{
-                columns: [
-                  "Name",
-                  "Size",
-                  "Company",
-                  "Qty",
-                  "Type",
-                  "Rate",
-                  "HNS",
-                ],
-                data: [
-                  ...dataGenerator(
-                    ["T1", "18x12", "ABC", 1000, "abs", 200, "12%"],
-                    105
-                  ),
-                ],
-                title: "Inventory",
-                isSearchEnable: true,
-                fixedHeader: true,
-                tableBodyHeight: "450px",
-                editCallback: onTileSelect,
-              }}
-            />
-          )}
-          modalWidth="60vw"
-          modalHeight="70vh"
-        ></CustomModal>
+          onTileDataSelect={onTileSelect}
+        />
       ) : null}
 
       {InvoiceData.showMerchantTable ? (
-        <CustomModal
-          showModal={InvoiceData.showMerchantTable}
+        <MerchantTable
+          showMerchantTable={InvoiceData.showMerchantTable}
           closeModal={() => {
             setInvoiceData((prev) => ({ ...prev, showMerchantTable: false }));
           }}
-          modalTitle="Merchant Table"
-          ModalType={(props) => (
-            <CustomTable
-              {...{
-                columns: ["Company", "Address", "Phone No1", "Phone No2"],
-                data: [
-                  ...dataGenerator(
-                    [
-                      "ABC",
-                      "asdasfasddasdas",
-                      "+912123123123",
-                      "+912123123123",
-                    ],
-                    56
-                  ),
-                ],
-                title: "Company",
-                isSearchEnable: true,
-                fixedHeader: true,
-                tableBodyHeight: "450px",
-                editCallback: InvoiceData.showMerchantCallback,
-              }}
-            />
-          )}
-          modalWidth="60vw"
-          modalHeight="70vh"
-        ></CustomModal>
+          onMerchantDataSelect={InvoiceData.showMerchantCallback}
+        />
       ) : null}
     </div>
   );

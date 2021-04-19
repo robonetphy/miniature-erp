@@ -14,15 +14,8 @@ import {
   makeStyles,
 } from "@material-ui/core";
 import { v4 as uuidv4 } from "uuid";
-import CustomModal from "../modal";
-import CustomTable from "../table";
-const dataGenerator = (data, length) => {
-  var dummy = [];
-  for (var i = 0; i < length; i++) {
-    dummy.push(data);
-  }
-  return dummy;
-};
+import { StockTable } from "../customTables";
+
 const useStyles = makeStyles((theme) => ({
   textField: {
     margin: "1% 2%",
@@ -335,41 +328,13 @@ export default function CreatePurchase(props) {
         </Grid>
       </Grid>
       {PurchaseData.showStockTable ? (
-        <CustomModal
-          showModal={PurchaseData.showStockTable}
+        <StockTable
+          showStockTable={PurchaseData.showStockTable}
           closeModal={() => {
             setPurchaseData((prev) => ({ ...prev, showStockTable: false }));
           }}
-          modalTitle="Stock Table"
-          ModalType={(props) => (
-            <CustomTable
-              {...{
-                columns: [
-                  "Name",
-                  "Size",
-                  "Company",
-                  "Qty",
-                  "Type",
-                  "Rate",
-                  "HNS",
-                ],
-                data: [
-                  ...dataGenerator(
-                    ["T1", "18x12", "ABC", 1000, "abs", 200, "12%"],
-                    105
-                  ),
-                ],
-                title: "Inventory",
-                isSearchEnable: true,
-                fixedHeader: true,
-                tableBodyHeight: "450px",
-                editCallback: onTileSelect,
-              }}
-            />
-          )}
-          modalWidth="60vw"
-          modalHeight="70vh"
-        ></CustomModal>
+          onTileDataSelect={onTileSelect}
+        />
       ) : null}
     </div>
   );

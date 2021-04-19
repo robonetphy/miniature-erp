@@ -8,15 +8,8 @@ import {
   Select,
   MenuItem,
 } from "@material-ui/core";
+import { StockTable, CompanyTable } from "../customTables";
 import CustomTable from "../table";
-import CustomModal from "../modal";
-const dataGenerator = (data, length) => {
-  var dummy = [];
-  for (var i = 0; i < length; i++) {
-    dummy.push(data);
-  }
-  return dummy;
-};
 const useStyles = makeStyles((theme) => ({
   textField: {
     margin: "1% 2%",
@@ -231,71 +224,23 @@ export default function ChangeRate() {
         </Button>
       </Grid>
       {RateData.showStockTable ? (
-        <CustomModal
-          showModal={RateData.showStockTable}
+        <StockTable
+          showStockTable={RateData.showStockTable}
           closeModal={() => {
             setRateData((prev) => ({ ...prev, showStockTable: false }));
           }}
-          modalTitle="Stock Table"
-          ModalType={(props) => (
-            <CustomTable
-              {...{
-                columns: [
-                  "Name",
-                  "Size",
-                  "Company",
-                  "Qty",
-                  "Type",
-                  "Rate",
-                  "HNS",
-                ],
-                data: [
-                  ...dataGenerator(
-                    ["T1", "18x12", "ABC", 1000, "abs", 200, "12%"],
-                    105
-                  ),
-                ],
-                title: "Inventory",
-                isSearchEnable: true,
-                fixedHeader: true,
-                tableBodyHeight: "450px",
-                editCallback: onTileSelect,
-              }}
-            />
-          )}
-          modalWidth="60vw"
-          modalHeight="70vh"
-        ></CustomModal>
+          onTileDataSelect={onTileSelect}
+        />
       ) : null}
 
       {RateData.showCompanyTable ? (
-        <CustomModal
-          showModal={RateData.showCompanyTable}
+        <CompanyTable
+          showCompanyTable={RateData.showCompanyTable}
           closeModal={() => {
             setRateData((prev) => ({ ...prev, showCompanyTable: false }));
           }}
-          modalTitle="Company Table"
-          ModalType={(props) => (
-            <CustomTable
-              {...{
-                columns: ["Company", "Address", "Phone No1"],
-                data: [
-                  ...dataGenerator(
-                    ["ABC", "asdasfasddasdas", "+912123123123"],
-                    56
-                  ),
-                ],
-                title: "Company",
-                isSearchEnable: true,
-                fixedHeader: true,
-                tableBodyHeight: "450px",
-                editCallback: onCompanySelect,
-              }}
-            />
-          )}
-          modalWidth="60vw"
-          modalHeight="70vh"
-        ></CustomModal>
+          onCompanyDataSelect={onCompanySelect}
+        />
       ) : null}
     </div>
   );

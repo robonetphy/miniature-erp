@@ -8,15 +8,7 @@ import {
   Typography,
   makeStyles,
 } from "@material-ui/core";
-import CustomModal from "../modal";
-import CustomTable from "../table";
-const dataGenerator = (data, length) => {
-  var dummy = [];
-  for (var i = 0; i < length; i++) {
-    dummy.push(data);
-  }
-  return dummy;
-};
+import { CompanyTable } from "../customTables";
 const useStyles = makeStyles((theme) => ({
   textField: {
     margin: "1% 2%",
@@ -239,33 +231,13 @@ export default function CreateStock(props) {
         </Grid>
       </Grid>
       {StockData.showCompanyTable ? (
-        <CustomModal
-          showModal={StockData.showCompanyTable}
+        <CompanyTable
+          showCompanyTable={StockData.showCompanyTable}
           closeModal={() => {
             setStockData((prev) => ({ ...prev, showCompanyTable: false }));
           }}
-          modalTitle="Company Table"
-          ModalType={(props) => (
-            <CustomTable
-              {...{
-                columns: ["Company", "Address", "Phone No"],
-                data: [
-                  ...dataGenerator(
-                    ["ABC", "asdasfasddasdas", "+912123123123"],
-                    56
-                  ),
-                ],
-                title: "Company",
-                isSearchEnable: true,
-                fixedHeader: true,
-                tableBodyHeight: "450px",
-                editCallback: onCompanySelect,
-              }}
-            />
-          )}
-          modalWidth="60vw"
-          modalHeight="70vh"
-        ></CustomModal>
+          onCompanyDataSelect={onCompanySelect}
+        />
       ) : null}
     </div>
   );
