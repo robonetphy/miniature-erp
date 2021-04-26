@@ -70,14 +70,14 @@ export default function ChangeRate() {
   const onTileSelect = (data) => {
     if (data)
       setRateData((prev) => {
-        const [Product] = data;
+        const { name: Product } = data;
         return { ...prev, Product: Product, showStockTable: false };
       });
   };
   const onCompanySelect = (data) => {
     if (data)
       setRateData((prev) => {
-        const [Company] = data;
+        const { compnay: Company } = data;
         return { ...prev, Company: Company, showCompanyTable: false };
       });
   };
@@ -203,13 +203,19 @@ export default function ChangeRate() {
       </Grid>
       <CustomTable
         {...{
-          isSearchEnable: true,
           title: "",
-          selectableRows: "none",
-          fixedHeader: true,
           tableBodyHeight: "230px",
-          columns: ["Name", "Size", "Company", "Qty", "Type", "Rate", "Amount"],
+          columns: [
+            { title: "Name", id: "name" },
+            { title: "Size", id: "size" },
+            { title: "Company", id: "company" },
+            { title: "Qty", id: "qty" },
+            { title: "Type", id: "type" },
+            { title: "Rate", id: "rate" },
+            { title: "HSN", id: "hsn" },
+          ],
           data: RateData.TableData,
+          autoFocus:false,
         }}
       ></CustomTable>
       <Grid container className={classes.button}>

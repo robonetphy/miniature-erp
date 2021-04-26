@@ -6,6 +6,7 @@ import {
   Typography,
   makeStyles,
 } from "@material-ui/core";
+import { v4 as uuidv4 } from "uuid";
 import CustomTable from "../table";
 import useEnterNavigation from "../../hooks/useEnterNavigation";
 const useStyles = makeStyles((theme) => ({
@@ -50,7 +51,10 @@ export default function ManageHSN() {
     save();
     setHSNData((prev) => ({
       ...prev,
-      TableData: [[prev.HSNCode, prev.HSN], ...prev.TableData],
+      TableData: [
+        { hsncode: prev.HSNCode, hsn: prev.HSN, key: uuidv4() },
+        ...prev.TableData,
+      ],
       HSNCode: "",
       HSN: "",
     }));
@@ -99,13 +103,14 @@ export default function ManageHSN() {
       </Grid>
       <CustomTable
         {...{
-          columns: ["HSN Code", "HSN %"],
-          isSearchEnable: true,
+          columns: [
+            { title: "HSN Code", id: "hsncode" },
+            { title: "HSN %", id: "hsn" },
+          ],
           title: "",
-          fixedHeader: true,
           tableBodyHeight: "500px",
-          selectableRows: "none",
           data: HSNData.TableData,
+          autoFocus:false,
         }}
       ></CustomTable>
     </div>

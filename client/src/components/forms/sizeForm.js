@@ -7,6 +7,7 @@ import {
   makeStyles,
 } from "@material-ui/core";
 import CustomTable from "../table";
+import { v4 as uuidv4 } from "uuid";
 import useEnterNavigation from "../../hooks/useEnterNavigation";
 const useStyles = makeStyles((theme) => ({
   textField: {
@@ -47,7 +48,7 @@ export default function ManageSize() {
     save();
     setSizeData((prev) => ({
       ...prev,
-      TableData: [[prev.Size], ...prev.TableData],
+      TableData: [{ size: prev.Size, key: uuidv4() }, ...prev.TableData],
       Size: "",
     }));
   };
@@ -89,13 +90,11 @@ export default function ManageSize() {
       </Grid>
       <CustomTable
         {...{
-          columns: ["Size"],
-          isSearchEnable: true,
+          columns: [{ title: "Size", id: "size" }],
           title: "",
-          fixedHeader: true,
           tableBodyHeight: "500px",
-          selectableRows: "none",
           data: SizeData.TableData,
+          autoFocus:false,
         }}
       ></CustomTable>
     </div>

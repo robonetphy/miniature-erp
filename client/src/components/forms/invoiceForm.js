@@ -70,13 +70,20 @@ export default function CreateInvoice(props) {
   const onMerchantSelect = (data) => {
     if (data)
       setInvoiceData((prev) => {
-        const [Merchant, Address, PhoneNo1, PhoneNo2] = data;
+        const {
+          name: Merchant,
+          address: Address,
+          phone1: PhoneNo1,
+          phone2: PhoneNo2,
+          gstin: GSTIN,
+        } = data;
         return {
           ...prev,
           MerchantName: Merchant,
           Address: Address,
           PhoneNo1: PhoneNo1,
           PhoneNo2: PhoneNo2,
+          GSTIN: GSTIN,
           showMerchantTable: false,
         };
       });
@@ -84,7 +91,13 @@ export default function CreateInvoice(props) {
   const onShippedToSelect = (data) => {
     if (data)
       setInvoiceData((prev) => {
-        const [Merchant, Address, PhoneNo1, PhoneNo2] = data;
+        const {
+          name: Merchant,
+          address: Address,
+          phone1: PhoneNo1,
+          phone2: PhoneNo2,
+          gstin: GSTIN,
+        } = data;
         return {
           ...prev,
           ShippedTo: {
@@ -92,6 +105,7 @@ export default function CreateInvoice(props) {
             Address: Address,
             PhoneNo1: PhoneNo1,
             PhoneNo2: PhoneNo2,
+            GSTIN: GSTIN,
           },
           showMerchantTable: false,
         };
@@ -100,7 +114,13 @@ export default function CreateInvoice(props) {
   const onTileSelect = (data) => {
     if (data)
       setInvoiceData((prev) => {
-        const [Product, Size, , Qty, , Rate, HSN] = data;
+        const {
+          name: Product,
+          size: Size,
+          qty: Qty,
+          rate: Rate,
+          hsn: HSN,
+        } = data;
         let TotalQty = prev.TotalQty + parseInt(Qty);
         let TotalAmount = prev.TotalAmount + parseInt(Qty) * parseInt(Rate);
         let Count = prev.Count + 1;
@@ -361,7 +381,7 @@ export default function CreateInvoice(props) {
             }}
             data-name="tile"
           >
-            Select Tile
+            Select Item
           </Button>
         </Grid>
       </Grid>

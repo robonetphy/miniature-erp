@@ -42,6 +42,8 @@ export default function CreateBreakage(props) {
   const classes = useStyles();
   const containerRef = useRef(null);
   const [BreakageData, setBreakageData] = useState({
+    Date: props.Date ?? new Date().toISOString().substring(0, 10),
+    Title: props.Title ?? "",
     Remarks: props.Remarks ?? "",
     TotalQty: props.TotalQty ?? 0,
     TotalAmount: props.TotalAmount ?? 0,
@@ -55,6 +57,8 @@ export default function CreateBreakage(props) {
   };
   const cleanForm = () => {
     setBreakageData({
+      Date: new Date().toISOString().substring(0, 10),
+      Title: "",
       Remarks: "",
       TotalQty: 0,
       TotalAmount: 0,
@@ -66,7 +70,7 @@ export default function CreateBreakage(props) {
   const onTileSelect = (data) => {
     if (data)
       setBreakageData((prev) => {
-        const [Product, Size, Company, Qty, Type, Rate] = data;
+        const { name: Name, qty: Qty, rate: Rate } = data;
         let TotalQty = prev.TotalQty + parseInt(Qty);
         let TotalAmount = prev.TotalAmount + parseInt(Qty) * parseInt(Rate);
         let TotalItem = prev.TotalItem + 1;
@@ -77,10 +81,7 @@ export default function CreateBreakage(props) {
           TotalItem: TotalItem,
           TableRows: [
             {
-              size: Size,
-              product: Product,
-              company: Company,
-              type: Type,
+              name: Name,
               qty: Qty,
               rate: Rate,
               subtotal: parseInt(Rate) * parseInt(Qty),
@@ -164,18 +165,29 @@ export default function CreateBreakage(props) {
       <Grid container className={classes.button}>
         <Grid item sm={1}>
           <Typography gutterBottom className={classes.label}>
-            Remarks
+            Date
+          </Typography>
+          <Typography gutterBottom className={classes.label}>
+            Title
           </Typography>
         </Grid>
-        <Grid item sm={4}>
-          <TextField
+        <Grid item sm={6}>
+        <TextField
             autoFocus={true}
-            className={classes.textField}
-            label="Remarks"
-            variant="outlined"
-            value={BreakageData.Remarks}
+            name="Date"
+            label="Date"
+            type="date"
+            value={BreakageData.Date}
             onChange={handleBreakageDataChange}
-            name="Remarks"
+            className={classes.textField}
+          />
+          <TextField
+            className={classes.textField}
+            value={BreakageData.Title}
+            onChange={handleBreakageDataChange}
+            label="Title"
+            name="Title"
+            variant="outlined"
             fullWidth={true}
           />
         </Grid>
@@ -191,7 +203,7 @@ export default function CreateBreakage(props) {
               setBreakageData((prev) => ({ ...prev, showStockTable: true }));
             }}
           >
-            Select Tile
+            Select Item
           </Button>
         </Grid>
       </Grid>
@@ -199,29 +211,17 @@ export default function CreateBreakage(props) {
         <Table className={classes.table} stickyHeader aria-label="sticky table">
           <TableHead>
             <TableRow>
-              <TableCell>Size</TableCell>
-              <TableCell>Product</TableCell>
-              <TableCell>Company</TableCell>
-              <TableCell>Type</TableCell>
+              <TableCell>Name</TableCell>
               <TableCell>QTY</TableCell>
               <TableCell>Rate</TableCell>
-              <TableCell>Sub Total</TableCell>
+              <TableCell>Amount</TableCell>
             </TableRow>
           </TableHead>
           <TableBody>
             {BreakageData.TableRows.map((row, index) => (
               <TableRow key={row.key}>
                 <TableCell component="th" scope="row">
-                  {row.size}
-                </TableCell>
-                <TableCell component="th" scope="row">
-                  {row.product}
-                </TableCell>
-                <TableCell component="th" scope="row">
-                  {row.company}
-                </TableCell>
-                <TableCell component="th" scope="row">
-                  {row.type}
+                  {row.name}
                 </TableCell>
                 <TableCell>
                   <TextField
@@ -284,6 +284,22 @@ export default function CreateBreakage(props) {
         justify="center"
         className={classes.button}
       >
+        <Grid item sm={1}>
+          <Typography gutterBottom className={classes.label}>
+            Remarks
+          </Typography>
+        </Grid>
+        <Grid item sm={4}>
+          <TextField
+            className={classes.textField}
+            value={BreakageData.Remarks}
+            onChange={handleBreakageDataChange}
+            name="Remarks"
+            label="Remarks"
+            variant="outlined"
+            fullWidth={true}
+          />
+        </Grid>
         <Grid item sm={7} className={classes.label}>
           <Button
             variant="contained"

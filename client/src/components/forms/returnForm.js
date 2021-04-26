@@ -83,7 +83,12 @@ export default function CreateReturn(props) {
   const onMerchantSelect = (data) => {
     if (data)
       setReturnData((prev) => {
-        const [Merchant, Address, PhoneNo1, PhoneNo2] = data;
+        const {
+          name: Merchant,
+          address: Address,
+          phone1: PhoneNo1,
+          phone2: PhoneNo2,
+        } = data;
         return {
           ...prev,
           MerchantName: Merchant,
@@ -97,7 +102,14 @@ export default function CreateReturn(props) {
   const onTileSelect = (data) => {
     if (data)
       setReturnData((prev) => {
-        const [Product, Size, Company, Qty, Type, Rate] = data;
+        const {
+          name: Product,
+          size: Size,
+          company: Company,
+          qty: Qty,
+          type: Type,
+          rate: Rate,
+        } = data;
         let TotalQty = prev.TotalQty + parseInt(Qty);
         let TotalAmount = prev.TotalAmount + parseInt(Qty) * parseInt(Rate);
         let TotalItem = prev.TotalItem + 1;
@@ -300,7 +312,7 @@ export default function CreateReturn(props) {
             }}
             data-name="tile"
           >
-            Select Tile
+            Select Item
           </Button>
         </Grid>
       </Grid>

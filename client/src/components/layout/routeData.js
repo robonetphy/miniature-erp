@@ -1,8 +1,9 @@
 import CustomTable from "../table";
+import { v4 as uuidv4 } from "uuid";
 const dataGenerator = (data, length) => {
   var dummy = [];
   for (var i = 0; i < length; i++) {
-    dummy.push(data);
+    dummy.push({ ...data, key: uuidv4() });
   }
   return dummy;
 };
@@ -13,13 +14,26 @@ export const routes = [
   {
     Component: CustomTable,
     data: {
-      columns: ["Date", "Title", "Qty", "Amount", "Remarks"],
+      columns: [
+        { title: "Date", id: "date" },
+        { title: "Title", id: "title" },
+        { title: "Qty", id: "qty" },
+        { title: "Amount", id: "amount" },
+        { title: "Remarks", id: "remarks" },
+      ],
       data: [
-        ...dataGenerator(["12-2-2021", "Title1", 100, 1000, "Firstone"], 42),
+        ...dataGenerator(
+          {
+            date: "12-2-2021",
+            title: "Title1",
+            qty: 100,
+            amount: 1000,
+            remarks: "Firstone",
+          },
+          42
+        ),
       ],
       title: "Purchase",
-      isSearchEnable: true,
-      fixedHeader: true,
       tableBodyHeight: "600px",
     },
     path: "/purchase",
@@ -28,13 +42,30 @@ export const routes = [
   {
     Component: CustomTable,
     data: {
-      columns: ["Name", "Size", "Company", "Qty", "Type", "Rate", "HNS"],
+      columns: [
+        { title: "Name", id: "name" },
+        { title: "Size", id: "size" },
+        { title: "Company", id: "company" },
+        { title: "Qty", id: "qty" },
+        { title: "Type", id: "type" },
+        { title: "Rate", id: "rate" },
+        { title: "HSN", id: "hsn" },
+      ],
       data: [
-        ...dataGenerator(["T1", "18x12", "ABC", 1000, "abs", 200, "12%"], 105),
+        ...dataGenerator(
+          {
+            name: "T1",
+            size: "18x12",
+            company: "ABC",
+            qty: 1000,
+            type: "abs",
+            rate: 200,
+            hsn: "12%",
+          },
+          105
+        ),
       ],
       title: "Inventory",
-      isSearchEnable: true,
-      fixedHeader: true,
       tableBodyHeight: "600px",
     },
     path: "/inventory",
@@ -43,11 +74,22 @@ export const routes = [
   {
     Component: CustomTable,
     data: {
-      columns: ["Company", "Address", "Phone No"],
-      data: [...dataGenerator(["ABC", "asdasfasddasdas", "+912123123123"], 56)],
+      columns: [
+        { title: "Company", id: "company" },
+        { title: "Address", id: "address" },
+        { title: "Phone No", id: "phoneno" },
+      ],
+      data: [
+        ...dataGenerator(
+          {
+            company: "ABC",
+            address: "asdasfasddasdas",
+            phoneno: "+912123123123",
+          },
+          56
+        ),
+      ],
       title: "Company",
-      isSearchEnable: true,
-      fixedHeader: true,
       tableBodyHeight: "600px",
     },
     path: "/company",
@@ -56,22 +98,26 @@ export const routes = [
   {
     Component: CustomTable,
     data: {
-      columns: ["Name", "Phone1", "Phone2", "Address", "GSTIN"],
+      columns: [
+        { title: "Name", id: "name" },
+        { title: "Phone1", id: "phone1" },
+        { title: "Phone2", id: "phone2" },
+        { title: "Address", id: "address" },
+        { title: "GSTIN", id: "gstin" },
+      ],
       data: [
         ...dataGenerator(
-          [
-            "abc",
-            "+912123123123",
-            "+912123123123",
-            "asdasfasddasdas",
-            "ASFAS1231231A",
-          ],
+          {
+            name: "abc",
+            phone1: "+912123123123",
+            phone2: "+912123123123",
+            address: "asdasfasddasdas",
+            gstin: "ASFAS1231231A",
+          },
           15
         ),
       ],
       title: "Merchant",
-      isSearchEnable: true,
-      fixedHeader: true,
       tableBodyHeight: "600px",
     },
     path: "/merchant",
@@ -80,16 +126,28 @@ export const routes = [
   {
     Component: CustomTable,
     data: {
-      columns: ["Invoice No", "Date", "Merchant", "Qty", "Total", "Remarks"],
+      columns: [
+        { title: "Invoice No", id: "invoiceno" },
+        { title: "Date", id: "date" },
+        { title: "Merchant", id: "merchant" },
+        { title: "Qty", id: "qty" },
+        { title: "Total", id: "total" },
+        { title: "Remarks", id: "remarks" },
+      ],
       data: [
         ...dataGenerator(
-          ["123123", "21-12-2021", "ABC", 123, 312, "hi there"],
+          {
+            invoiceno: "123123",
+            date: "21-12-2021",
+            merchant: "ABC",
+            qty: 123,
+            total: 312,
+            remarks: "hi there",
+          },
           504
         ),
       ],
       title: "Invoice",
-      isSearchEnable: true,
-      fixedHeader: true,
       tableBodyHeight: "600px",
     },
     path: "/invoice",
@@ -98,11 +156,26 @@ export const routes = [
   {
     Component: CustomTable,
     data: {
-      columns: ["Name", "Qty", "Type", "Remarks"],
-      data: [...dataGenerator(["123123", 123, 312, "hi there"], 56)],
+      columns: [
+        { title: "Date", id: "date" },
+        { title: "Title", id: "title" },
+        { title: "Qty", id: "qty" },
+        { title: "Amount", id: "amount" },
+        { title: "Remarks", id: "remarks" },
+      ],
+      data: [
+        ...dataGenerator(
+          {
+            date: "12-2-2021",
+            title: "Title1",
+            qty: 100,
+            amount: 1000,
+            remarks: "Firstone",
+          },
+          42
+        ),
+      ],
       title: "Breakage",
-      isSearchEnable: true,
-      fixedHeader: true,
       tableBodyHeight: "600px",
     },
     path: "/breakage",
@@ -112,22 +185,27 @@ export const routes = [
     Component: CustomTable,
     data: {
       columns: [
-        "RI No",
-        "Date",
-        "Merchant",
-        "Total Qty",
-        "Total Amount",
-        "Remarks",
+        { title: "RI No", id: "rino" },
+        { title: "Date", id: "date" },
+        { title: "Merchant", id: "merchant" },
+        { title: "Total Qty", id: "totalqty" },
+        { title: "Total Amount", id: "totalamount" },
+        { title: "Remarks", id: "remarks" },
       ],
       data: [
         ...dataGenerator(
-          ["123123", "21-12-2021", "ABC", 123, 312, "hi there"],
+          {
+            rino: "123123",
+            date: "21-12-2021",
+            merchant: "ABC",
+            totalqty: 123,
+            totalamount: 312,
+            remarks: "hi there",
+          },
           54
         ),
       ],
       title: "Return",
-      isSearchEnable: true,
-      fixedHeader: true,
       tableBodyHeight: "600px",
     },
     path: "/return",

@@ -10,6 +10,7 @@ import {
 } from "@material-ui/core";
 import CustomTable from "../table";
 import { StockTable, CompanyTable } from "../customTables";
+import { v4 as uuidv4 } from "uuid";
 const useStyles = makeStyles((theme) => ({
   textField: {
     margin: "1% 2%",
@@ -74,14 +75,14 @@ export default function ManageWeight() {
   const onTileSelect = (data) => {
     if (data)
       setWeightData((prev) => {
-        const [Product] = data;
+        const { name: Product } = data;
         return { ...prev, Product: Product, showStockTable: false };
       });
   };
   const onCompanySelect = (data) => {
     if (data)
       setWeightData((prev) => {
-        const [Company] = data;
+        const { company: Company } = data;
         return { ...prev, Company: Company, showCompanyTable: false };
       });
   };
@@ -101,7 +102,14 @@ export default function ManageWeight() {
         showStockTable: false,
         showCompanyTable: false,
         TableData: [
-          [prev.Product, prev.Company, prev.Size, prev.Type, prev.Weight],
+          {
+            product: prev.Product,
+            company: prev.Company,
+            size: prev.Size,
+            type: prev.Type,
+            weight: prev.Weight,
+            key: uuidv4(),
+          },
           ...prev.TableData,
         ],
       };
@@ -222,13 +230,17 @@ export default function ManageWeight() {
 
       <CustomTable
         {...{
-          columns: ["Name", "Company", "Size", "Type", "Weight"],
-          isSearchEnable: true,
+          columns: [
+            { title: "Product", id: "product" },
+            { title: "Company", id: "company" },
+            { title: "Size", id: "size" },
+            { title: "Type", id: "type" },
+            { title: "Weight", id: "weight" },
+          ],
           title: "",
-          selectableRows: "none",
-          fixedHeader: true,
           tableBodyHeight: "300px",
           data: WeightData.TableData,
+          autoFocus:false,
         }}
       ></CustomTable>
       {WeightData.showStockTable ? (

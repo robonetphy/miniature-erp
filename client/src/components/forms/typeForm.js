@@ -8,6 +8,8 @@ import {
 } from "@material-ui/core";
 import CustomTable from "../table";
 import useEnterNavigation from "../../hooks/useEnterNavigation";
+import { v4 as uuidv4 } from "uuid";
+
 const useStyles = makeStyles((theme) => ({
   textField: {
     margin: "1% 2%",
@@ -47,7 +49,7 @@ export default function ManageType() {
     save();
     setTypeData((prev) => ({
       ...prev,
-      TableData: [[prev.Type], ...prev.TableData],
+      TableData: [{ type: prev.Type, key: uuidv4() }, ...prev.TableData],
       Type: "",
     }));
   };
@@ -89,13 +91,11 @@ export default function ManageType() {
       </Grid>
       <CustomTable
         {...{
-          columns: ["Type"],
-          isSearchEnable: true,
+          columns: [{ title: "Type", id: "type" }],
           title: "",
-          fixedHeader: true,
           tableBodyHeight: "500px",
-          selectableRows: "none",
           data: TypeData.TableData,
+          autoFocus:false,
         }}
       ></CustomTable>
     </div>

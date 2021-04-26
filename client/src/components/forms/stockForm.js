@@ -63,7 +63,7 @@ export default function CreateStock(props) {
   };
   const onCompanySelect = (data) => {
     setStockData((prev) => {
-      const [Company, ,] = data;
+      const { company: Company } = data;
       return {
         ...prev,
         Company: Company,

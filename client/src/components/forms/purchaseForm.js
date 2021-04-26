@@ -66,7 +66,7 @@ export default function CreatePurchase(props) {
   const onTileSelect = (data) => {
     if (data)
       setPurchaseData((prev) => {
-        const [Name, , , Qty, , Rate] = data;
+        const { name: Name, qty: Qty, rate: Rate } = data;
         let TotalQty = prev.TotalQty + parseInt(Qty);
         let TotalAmount = prev.TotalAmount + parseInt(Qty) * parseInt(Rate);
         return {
@@ -202,7 +202,7 @@ export default function CreatePurchase(props) {
               setPurchaseData((prev) => ({ ...prev, showStockTable: true }));
             }}
           >
-            Select Tile
+            Select Item
           </Button>
         </Grid>
       </Grid>
