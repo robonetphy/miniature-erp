@@ -156,8 +156,9 @@ export default function ManageWeight() {
           <Autocomplete
             options={["N/A", "123x123", "11x12", "15x15"]}
             value={WeightData.Size}
-            onChange={handleWeightDataChange}
-            name="Size"
+            onChange={(e, newValue) => {
+              setWeightData((prev) => ({ ...prev, Size: newValue }));
+            }}
             className={classes.textField}
             fullWidth={true}
             autoHighlight={true}
@@ -187,8 +188,9 @@ export default function ManageWeight() {
           <Autocomplete
             options={["N/A", "ABC", "ABXC", "ABCS"]}
             value={WeightData.Type}
-            onChange={handleWeightDataChange}
-            name="Type"
+            onChange={(e, newValue) => {
+              setWeightData((prev) => ({ ...prev, Type: newValue }));
+            }}
             className={classes.textField}
             fullWidth={true}
             autoHighlight={true}

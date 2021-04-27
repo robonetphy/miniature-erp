@@ -165,8 +165,9 @@ export default function CreateStock(props) {
           <Autocomplete
             options={["N/A", "123x123", "122x122", "646x54"]}
             value={StockData.Size}
-            name="Size"
-            onChange={handleStockDataChange}
+            onChange={(e, newValue) => {
+              setStockData((prev) => ({ ...prev, Size: newValue }));
+            }}
             className={classes.textField}
             fullWidth={true}
             autoHighlight={true}
@@ -190,8 +191,9 @@ export default function CreateStock(props) {
           <Autocomplete
             options={["N/A", "ABC", "ABCX", "XCY"]}
             value={StockData.Type}
-            name="Type"
-            onChange={handleStockDataChange}
+            onChange={(e, newValue) => {
+              setStockData((prev) => ({ ...prev, Type: newValue }));
+            }}
             className={classes.textField}
             fullWidth={true}
             autoHighlight={true}
@@ -226,8 +228,9 @@ export default function CreateStock(props) {
           <Autocomplete
             options={["N/A", "12%", "11%", "10%"]}
             value={StockData.HSN}
-            name="HSN"
-            onChange={handleStockDataChange}
+            onChange={(e, newValue) => {
+              setStockData((prev) => ({ ...prev, HSN: newValue }));
+            }}
             className={classes.textField}
             fullWidth={true}
             autoHighlight={true}

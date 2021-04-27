@@ -366,10 +366,11 @@ export default function CreateInvoice(props) {
               option.code === InvoiceData.State.code
             }
             value={InvoiceData.State}
-            name="State"
+            onChange={(e, newValue) => {
+              setInvoiceData((prev) => ({ ...prev, State: newValue }));
+            }}
             fullWidth
             className={classes.textField}
-            onChange={handleInvoiceDataChange}
             autoHighlight={true}
             autoSelect={true}
             clearOnBlur={true}
@@ -478,8 +479,9 @@ export default function CreateInvoice(props) {
               "Electronic Bank Transfers",
             ]}
             value={InvoiceData.PaymentType}
-            onChange={handleInvoiceDataChange}
-            name="PaymentType"
+            onChange={(e, newValue) => {
+              setInvoiceData((prev) => ({ ...prev, PaymentType: newValue }));
+            }}
             fullWidth
             className={classes.textField}
             autoHighlight={true}

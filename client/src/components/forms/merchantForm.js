@@ -217,9 +217,10 @@ export default function AddMerchant(props) {
             option.code === MerchantData.State.code
           }
           value={MerchantData.State}
-          name="State"
+          onChange={(e, newValue) => {
+            setMerchantData((prev) => ({ ...prev, State: newValue }));
+          }}
           className={classes.textField}
-          onChange={handleMerchantDataChange}
           fullWidth={true}
           autoHighlight={true}
           autoSelect={true}

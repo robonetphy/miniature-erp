@@ -128,8 +128,9 @@ export default function ChangeRate() {
           <Autocomplete
             options={["N/A", "123x123", "11x12", "15x15"]}
             value={RateData.Size}
-            onChange={handleRateDataChange}
-            name="Size"
+            onChange={(e, newValue) => {
+              setRateData((prev) => ({ ...prev, Size: newValue }));
+            }}
             className={classes.textField}
             fullWidth={true}
             autoHighlight={true}
@@ -158,8 +159,9 @@ export default function ChangeRate() {
           <Autocomplete
             options={["N/A", "ABC", "ABXC", "ABCS"]}
             value={RateData.Type}
-            onChange={handleRateDataChange}
-            name="Type"
+            onChange={(e, newValue) => {
+              setRateData((prev) => ({ ...prev, Type: newValue }));
+            }}
             className={classes.textField}
             fullWidth={true}
             autoHighlight={true}
