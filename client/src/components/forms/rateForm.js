@@ -5,9 +5,8 @@ import {
   Button,
   Typography,
   makeStyles,
-  Select,
-  MenuItem,
 } from "@material-ui/core";
+import Autocomplete from "@material-ui/lab/Autocomplete";
 import { StockTable, CompanyTable } from "../customTables";
 import CustomTable from "../table";
 const useStyles = makeStyles((theme) => ({
@@ -40,8 +39,8 @@ export default function ChangeRate() {
   const classes = useStyles();
   const containerRef = useRef(null);
   const [RateData, setRateData] = useState({
-    Size: "",
-    Type: "",
+    Size: "N/A",
+    Type: "N/A",
     Company: "ALL",
     Product: "ALL",
     Rate: 0,
@@ -52,8 +51,8 @@ export default function ChangeRate() {
   const cleanForm = () => {
     setRateData((prev) => ({
       ...prev,
-      Size: "",
-      Type: "",
+      Size: "N/A",
+      Type: "N/A",
       Company: "ALL",
       Product: "ALL",
       Rate: 0,
@@ -61,10 +60,10 @@ export default function ChangeRate() {
       showCompanyTable: false,
     }));
   };
-  const handleRateDataChange = (event) => {
+  const handleRateDataChange = (event, newValue) => {
     setRateData((prev) => ({
       ...prev,
-      [event.target.name]: event.target.value,
+      [event.target.name]: newValue ?? event.target.value,
     }));
   };
   const onTileSelect = (data) => {
@@ -106,36 +105,56 @@ export default function ChangeRate() {
           </Typography>
         </Grid>
         <Grid item sm={3}>
-          <Select
+          <Autocomplete
+            options={["N/A", "123x123", "11x12", "15x15"]}
             value={RateData.Size}
             onChange={handleRateDataChange}
             name="Size"
             className={classes.textField}
-            variant="outlined"
             fullWidth={true}
-          >
-            <MenuItem value="">
-              <em>None</em>
-            </MenuItem>
-            <MenuItem value={10}>Size A</MenuItem>
-            <MenuItem value={20}>Size A</MenuItem>
-            <MenuItem value={30}>Size A</MenuItem>
-          </Select>
-          <Select
+            autoHighlight={true}
+            autoSelect={true}
+            clearOnBlur={true}
+            blurOnSelect={true}
+            autoComplete={true}
+            openOnFocus={true}
+            disablePortal={true}
+            disableListWrap={true}
+            clearOnEscape={true}
+            renderInput={(params) => (
+              <TextField
+                data-navigation="true"
+                {...params}
+                label="Size"
+                variant="outlined"
+              />
+            )}
+          />
+          <Autocomplete
+            options={["N/A", "ABC", "ABXC", "ABCS"]}
             value={RateData.Type}
             onChange={handleRateDataChange}
             name="Type"
             className={classes.textField}
-            variant="outlined"
             fullWidth={true}
-          >
-            <MenuItem value="">
-              <em>None</em>
-            </MenuItem>
-            <MenuItem value={10}>10</MenuItem>
-            <MenuItem value={20}>20</MenuItem>
-            <MenuItem value={30}>30</MenuItem>
-          </Select>
+            autoHighlight={true}
+            autoSelect={true}
+            clearOnBlur={true}
+            blurOnSelect={true}
+            autoComplete={true}
+            openOnFocus={true}
+            disablePortal={true}
+            disableListWrap={true}
+            clearOnEscape={true}
+            renderInput={(params) => (
+              <TextField
+                data-navigation="true"
+                {...params}
+                label="Type"
+                variant="outlined"
+              />
+            )}
+          />
           <span className={classes.SelectedItems}>{RateData.Company}</span>
           <Button
             variant="contained"
@@ -215,7 +234,7 @@ export default function ChangeRate() {
             { title: "HSN", id: "hsn" },
           ],
           data: RateData.TableData,
-          autoFocus:false,
+          autoFocus: false,
         }}
       ></CustomTable>
       <Grid container className={classes.button}>
