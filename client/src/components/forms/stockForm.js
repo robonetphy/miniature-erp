@@ -1,4 +1,4 @@
-import React, { useState, useRef } from "react";
+import React, { useState, useRef, useCallback } from "react";
 import {
   TextField,
   Grid,
@@ -8,6 +8,7 @@ import {
 } from "@material-ui/core";
 import { CompanyTable } from "../customTables";
 import Autocomplete from "@material-ui/lab/Autocomplete";
+import useEnterNavigation from "../../hooks/useEnterNavigation";
 const useStyles = makeStyles((theme) => ({
   textField: {
     margin: "1% 2%",
@@ -69,6 +70,7 @@ export default function CreateStock(props) {
         showCompanyTable: false,
       };
     });
+    handleNextFocus("name");
   };
   const saveAndClose = (e) => {
     save();
@@ -86,6 +88,25 @@ export default function CreateStock(props) {
     }));
   };
   const containerRef = useRef(null);
+  useEnterNavigation(containerRef);
+  const preOrderHelper = useCallback((root) => {
+    if (root !== null) {
+      if (root.tabIndex !== -1) return root;
+      var nodes = root.childNodes;
+      var isFound = null;
+      for (var i = 0; i < nodes.length; i++) {
+        isFound = preOrderHelper(nodes[i]);
+        if (isFound instanceof Element) return isFound;
+      }
+    }
+    return null;
+  }, []);
+  const handleNextFocus = (nextElementName) => {
+    const child = containerRef.current.querySelector(
+      `[data-name="${nextElementName}"]`
+    );
+    preOrderHelper(child).focus();
+  };
   return (
     <div ref={containerRef}>
       <Grid container spacing={3} className={classes.container}>
@@ -134,6 +155,8 @@ export default function CreateStock(props) {
             className={classes.textField}
             label="Tile's Name"
             variant="outlined"
+            data-name="name"
+            data-navigation="true"
             fullWidth={true}
             value={StockData.Name}
             onChange={handleStockDataChange}
@@ -196,6 +219,7 @@ export default function CreateStock(props) {
             onChange={handleStockDataChange}
             label="Rate"
             variant="outlined"
+            data-navigation="true"
             className={classes.textField}
             fullWidth={true}
           />

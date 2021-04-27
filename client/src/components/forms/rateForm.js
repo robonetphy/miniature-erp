@@ -1,4 +1,4 @@
-import React, { useState, useRef } from "react";
+import React, { useState, useRef, useCallback } from "react";
 import {
   TextField,
   Grid,
@@ -72,19 +72,39 @@ export default function ChangeRate() {
         const { name: Product } = data;
         return { ...prev, Product: Product, showStockTable: false };
       });
+    handleNextFocus("filter");
   };
   const onCompanySelect = (data) => {
     if (data)
       setRateData((prev) => {
-        const { compnay: Company } = data;
+        const { company: Company } = data;
         return { ...prev, Company: Company, showCompanyTable: false };
       });
+    handleNextFocus("product");
   };
   const save = () => {
     console.log(RateData);
   };
   const fetchTableData = () => {
     console.log("Fetch Table Data");
+  };
+  const preOrderHelper = useCallback((root) => {
+    if (root !== null) {
+      if (root.tabIndex !== -1) return root;
+      var nodes = root.childNodes;
+      var isFound = null;
+      for (var i = 0; i < nodes.length; i++) {
+        isFound = preOrderHelper(nodes[i]);
+        if (isFound instanceof Element) return isFound;
+      }
+    }
+    return null;
+  }, []);
+  const handleNextFocus = (nextElementName) => {
+    const child = containerRef.current.querySelector(
+      `[data-name="${nextElementName}"]`
+    );
+    preOrderHelper(child).focus();
   };
 
   return (
@@ -123,7 +143,12 @@ export default function ChangeRate() {
             clearOnEscape={true}
             renderInput={(params) => (
               <TextField
-                data-navigation="true"
+                autoFocus={true}
+                onKeyDown={(e) => {
+                  if (e.which === 13) {
+                    handleNextFocus("type");
+                  }
+                }}
                 {...params}
                 label="Size"
                 variant="outlined"
@@ -148,7 +173,12 @@ export default function ChangeRate() {
             clearOnEscape={true}
             renderInput={(params) => (
               <TextField
-                data-navigation="true"
+                onKeyDown={(e) => {
+                  if (e.which === 13) {
+                    handleNextFocus("company");
+                  }
+                }}
+                data-name="type"
                 {...params}
                 label="Type"
                 variant="outlined"
@@ -160,6 +190,7 @@ export default function ChangeRate() {
             variant="contained"
             size="large"
             color="primary"
+            data-name="company"
             className={classes.Typebutton}
             onClick={() => {
               containerRef.current.querySelector(":focus").blur();
@@ -173,6 +204,7 @@ export default function ChangeRate() {
             variant="contained"
             size="large"
             color="primary"
+            data-name="product"
             className={classes.Typebutton}
             onClick={() => {
               containerRef.current.querySelector(":focus").blur();
@@ -195,6 +227,12 @@ export default function ChangeRate() {
             variant="contained"
             size="large"
             color="primary"
+            data-name="filter"
+            onKeyDown={(e) => {
+              if (e.which === 13) {
+                handleNextFocus("rate");
+              }
+            }}
             className={classes.Typebutton}
             onClick={fetchTableData}
           >
@@ -213,6 +251,12 @@ export default function ChangeRate() {
             value={RateData.Rate}
             onChange={handleRateDataChange}
             name="Rate"
+            data-name="rate"
+            onKeyDown={(e) => {
+              if (e.which === 13) {
+                handleNextFocus("changerate");
+              }
+            }}
             type="number"
             className={classes.textField}
             label="Rate"
@@ -242,6 +286,7 @@ export default function ChangeRate() {
           data-navigation="true"
           variant="contained"
           size="large"
+          data-name="changerate"
           color="primary"
           onClick={save}
         >

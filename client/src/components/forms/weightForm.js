@@ -1,4 +1,4 @@
-import React, { useState, useRef } from "react";
+import React, { useState, useRef, useCallback } from "react";
 import {
   TextField,
   Grid,
@@ -77,6 +77,8 @@ export default function ManageWeight() {
         const { name: Product } = data;
         return { ...prev, Product: Product, showStockTable: false };
       });
+
+    handleNextFocus("weight");
   };
   const onCompanySelect = (data) => {
     if (data)
@@ -84,6 +86,7 @@ export default function ManageWeight() {
         const { company: Company } = data;
         return { ...prev, Company: Company, showCompanyTable: false };
       });
+    handleNextFocus("product");
   };
   const save = () => {
     console.log(WeightData);
@@ -113,6 +116,24 @@ export default function ManageWeight() {
         ],
       };
     });
+  };
+  const preOrderHelper = useCallback((root) => {
+    if (root !== null) {
+      if (root.tabIndex !== -1) return root;
+      var nodes = root.childNodes;
+      var isFound = null;
+      for (var i = 0; i < nodes.length; i++) {
+        isFound = preOrderHelper(nodes[i]);
+        if (isFound instanceof Element) return isFound;
+      }
+    }
+    return null;
+  }, []);
+  const handleNextFocus = (nextElementName) => {
+    const child = containerRef.current.querySelector(
+      `[data-name="${nextElementName}"]`
+    );
+    preOrderHelper(child).focus();
   };
   return (
     <div ref={containerRef}>
@@ -150,9 +171,15 @@ export default function ManageWeight() {
             clearOnEscape={true}
             renderInput={(params) => (
               <TextField
-                data-navigation="true"
+                data-name="size"
+                onKeyDown={(e) => {
+                  if (e.which === 13) {
+                    handleNextFocus("type");
+                  }
+                }}
                 {...params}
                 label="Size"
+                autoFocus={true}
                 variant="outlined"
               />
             )}
@@ -175,7 +202,12 @@ export default function ManageWeight() {
             clearOnEscape={true}
             renderInput={(params) => (
               <TextField
-                data-navigation="true"
+                data-name="type"
+                onKeyDown={(e) => {
+                  if (e.which === 13) {
+                    handleNextFocus("company");
+                  }
+                }}
                 {...params}
                 label="Type"
                 variant="outlined"
@@ -189,6 +221,7 @@ export default function ManageWeight() {
             size="large"
             color="primary"
             className={classes.Typebutton}
+            data-name="company"
             onClick={() => {
               containerRef.current.querySelector(":focus").blur();
               setWeightData((prev) => ({ ...prev, showCompanyTable: true }));
@@ -201,6 +234,7 @@ export default function ManageWeight() {
             variant="contained"
             size="large"
             color="primary"
+            data-name="product"
             className={classes.Typebutton}
             onClick={() => {
               containerRef.current.querySelector(":focus").blur();
@@ -235,6 +269,12 @@ export default function ManageWeight() {
             className={classes.textField}
             label="Weight"
             width="50"
+            data-name="weight"
+            onKeyDown={(e) => {
+              if (e.which === 13) {
+                handleNextFocus("addweight");
+              }
+            }}
           />
           <Button
             variant="contained"
@@ -242,6 +282,7 @@ export default function ManageWeight() {
             color="primary"
             className={classes.Typebutton}
             onClick={addWeight}
+            data-name="addweight"
           >
             Add Weight
           </Button>

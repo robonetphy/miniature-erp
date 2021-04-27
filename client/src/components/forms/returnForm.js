@@ -1,4 +1,4 @@
-import React, { useState, useRef } from "react";
+import React, { useState, useRef, useCallback } from "react";
 import {
   TextField,
   Grid,
@@ -98,6 +98,7 @@ export default function CreateReturn(props) {
           showMerchantTable: false,
         };
       });
+    handleNextFocus("date");
   };
   const onTileSelect = (data) => {
     if (data)
@@ -202,6 +203,25 @@ export default function CreateReturn(props) {
       nextFocus.focus();
     }
   };
+  const preOrderHelper = useCallback((root) => {
+    if (root !== null) {
+      if (root.tabIndex !== -1) return root;
+      var nodes = root.childNodes;
+      var isFound = null;
+      for (var i = 0; i < nodes.length; i++) {
+        isFound = preOrderHelper(nodes[i]);
+        if (isFound instanceof Element) return isFound;
+      }
+    }
+    return null;
+  }, []);
+  const handleNextFocus = (nextElementName) => {
+    const child = containerRef.current.querySelector(
+      `[data-name="${nextElementName}"]`
+    );
+    preOrderHelper(child).focus();
+  };
+
   return (
     <div ref={containerRef}>
       <Grid container spacing={1} className={classes.button}>
@@ -251,6 +271,12 @@ export default function CreateReturn(props) {
           <TextField
             className={classes.textField}
             type="date"
+            data-name="date"
+            onKeyDown={(e) => {
+              if (e.which === 13) {
+                handleNextFocus("phoneno1");
+              }
+            }}
             fullWidth={true}
             value={ReturnData.Date}
             onChange={handleReturnDataChange}
@@ -258,14 +284,12 @@ export default function CreateReturn(props) {
           />
           <TextField
             className={classes.textField}
-            label="PhoneNo2"
-            variant="outlined"
-            value={ReturnData.PhoneNo2}
-            onChange={handleReturnDataChange}
-            name="PhoneNo2"
-          />
-          <TextField
-            className={classes.textField}
+            onKeyDown={(e) => {
+              if (e.which === 13) {
+                handleNextFocus("phoneno2");
+              }
+            }}
+            data-name="phoneno1"
             label="PhoneNo1"
             variant="outlined"
             value={ReturnData.PhoneNo1}
@@ -274,6 +298,26 @@ export default function CreateReturn(props) {
           />
           <TextField
             className={classes.textField}
+            onKeyDown={(e) => {
+              if (e.which === 13) {
+                handleNextFocus("address");
+              }
+            }}
+            data-name="phoneno2"
+            label="PhoneNo2"
+            variant="outlined"
+            value={ReturnData.PhoneNo2}
+            onChange={handleReturnDataChange}
+            name="PhoneNo2"
+          />
+          <TextField
+            className={classes.textField}
+            onKeyDown={(e) => {
+              if (e.which === 13) {
+                handleNextFocus("remarks");
+              }
+            }}
+            data-name="address"
             label="Address"
             variant="outlined"
             value={ReturnData.Address}
@@ -293,6 +337,12 @@ export default function CreateReturn(props) {
           <TextField
             className={classes.textField}
             label="Remarks"
+            onKeyDown={(e)=>{
+              if (e.which === 13) {
+                handleNextFocus("tile");
+              }
+            }}
+            data-name="remarks"
             variant="outlined"
             value={ReturnData.Remarks}
             onChange={handleReturnDataChange}

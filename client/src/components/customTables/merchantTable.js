@@ -46,7 +46,7 @@ const MerchantTable = (props) => {
               columns: [
                 { title: "Name", id: "name" },
                 { title: "Phone1", id: "phone1" },
-                { title: "Phone1", id: "phone1" },
+                { title: "Phone2", id: "phone2" },
                 { title: "Address", id: "address" },
                 { title: "GSTIN", id: "gstin" },
               ],

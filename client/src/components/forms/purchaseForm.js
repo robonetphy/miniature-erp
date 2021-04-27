@@ -1,4 +1,4 @@
-import React, { useState, useRef } from "react";
+import React, { useState, useRef, useCallback } from "react";
 import {
   TextField,
   Grid,
@@ -153,6 +153,24 @@ export default function CreatePurchase(props) {
       nextFocus.focus();
     }
   };
+  const preOrderHelper = useCallback((root) => {
+    if (root !== null) {
+      if (root.tabIndex !== -1) return root;
+      var nodes = root.childNodes;
+      var isFound = null;
+      for (var i = 0; i < nodes.length; i++) {
+        isFound = preOrderHelper(nodes[i]);
+        if (isFound instanceof Element) return isFound;
+      }
+    }
+    return null;
+  }, []);
+  const handleNextFocus = (nextElementName) => {
+    const child = containerRef.current.querySelector(
+      `[data-name="${nextElementName}"]`
+    );
+    preOrderHelper(child).focus();
+  };
   return (
     <div ref={containerRef}>
       <Grid
@@ -178,6 +196,11 @@ export default function CreatePurchase(props) {
             type="date"
             value={PurchaseData.Date}
             onChange={handlePurchaseDataChange}
+            onKeyDown={(e)=>{
+              if (e.which === 13) {
+                handleNextFocus("title");
+              }
+            }}
             className={classes.textField}
           />
           <TextField
@@ -186,6 +209,12 @@ export default function CreatePurchase(props) {
             onChange={handlePurchaseDataChange}
             label="Title"
             name="Title"
+            data-name="title"
+            onKeyDown={(e)=>{
+              if (e.which === 13) {
+                handleNextFocus("tile");
+              }
+            }}
             variant="outlined"
             fullWidth={true}
           />

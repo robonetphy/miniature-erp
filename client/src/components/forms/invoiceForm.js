@@ -1,4 +1,4 @@
-import React, { useState, useRef } from "react";
+import React, { useState, useRef, useCallback } from "react";
 import {
   TextField,
   Grid,
@@ -10,8 +10,6 @@ import {
   TableHead,
   TableRow,
   Paper,
-  Select,
-  MenuItem,
   Typography,
   makeStyles,
 } from "@material-ui/core";
@@ -127,6 +125,7 @@ export default function CreateInvoice(props) {
           showMerchantTable: false,
         };
       });
+    handleNextFocus("address");
   };
   const onShippedToSelect = (data) => {
     if (data)
@@ -150,6 +149,7 @@ export default function CreateInvoice(props) {
           showMerchantTable: false,
         };
       });
+    handleNextFocus("tile");
   };
   const onTileSelect = (data) => {
     if (data)
@@ -248,6 +248,24 @@ export default function CreateInvoice(props) {
       nextFocus.focus();
     }
   };
+  const preOrderHelper = useCallback((root) => {
+    if (root !== null) {
+      if (root.tabIndex !== -1) return root;
+      var nodes = root.childNodes;
+      var isFound = null;
+      for (var i = 0; i < nodes.length; i++) {
+        isFound = preOrderHelper(nodes[i]);
+        if (isFound instanceof Element) return isFound;
+      }
+    }
+    return null;
+  }, []);
+  const handleNextFocus = (nextElementName) => {
+    const child = containerRef.current.querySelector(
+      `[data-name="${nextElementName}"]`
+    );
+    preOrderHelper(child).focus();
+  };
 
   return (
     <div ref={containerRef}>
@@ -277,7 +295,12 @@ export default function CreateInvoice(props) {
             value={InvoiceData.Date}
             onChange={handleInvoiceDataChange}
             name="Date"
-            variant="outlined"
+            type="date"
+            onKeyDown={(e) => {
+              if (e.which === 13) {
+                handleNextFocus("merchant");
+              }
+            }}
             fullWidth={true}
           />
           <TextField
@@ -293,6 +316,7 @@ export default function CreateInvoice(props) {
             variant="contained"
             size="large"
             color="primary"
+            data-name="merchant"
             className={classes.button}
             onClick={() => {
               containerRef.current.querySelector(":focus").blur();
@@ -312,6 +336,12 @@ export default function CreateInvoice(props) {
             value={InvoiceData.Address}
             onChange={handleInvoiceDataChange}
             name="Address"
+            data-name="address"
+            onKeyDown={(e) => {
+              if (e.which === 13) {
+                handleNextFocus("gstin");
+              }
+            }}
             fullWidth={true}
           />
           <TextField
@@ -321,6 +351,12 @@ export default function CreateInvoice(props) {
             onChange={handleInvoiceDataChange}
             name="GSTIN"
             fullWidth={true}
+            data-name="gstin"
+            onKeyDown={(e) => {
+              if (e.which === 13) {
+                handleNextFocus("state");
+              }
+            }}
             variant="outlined"
           />
           <Autocomplete
@@ -348,6 +384,12 @@ export default function CreateInvoice(props) {
                 data-navigation="true"
                 {...params}
                 label="state"
+                data-name="state"
+                onKeyDown={(e) => {
+                  if (e.which === 13) {
+                    handleNextFocus("phoneno1");
+                  }
+                }}
                 variant="outlined"
               />
             )}
@@ -375,6 +417,12 @@ export default function CreateInvoice(props) {
             onChange={handleInvoiceDataChange}
             name="PhoneNo1"
             variant="outlined"
+            data-name="phoneno1"
+            onKeyDown={(e) => {
+              if (e.which === 13) {
+                handleNextFocus("phoneno2");
+              }
+            }}
           />
           <TextField
             className={classes.textField}
@@ -383,9 +431,21 @@ export default function CreateInvoice(props) {
             onChange={handleInvoiceDataChange}
             name="PhoneNo2"
             variant="outlined"
+            data-name="phoneno2"
+            onKeyDown={(e) => {
+              if (e.which === 13) {
+                handleNextFocus("transportdetails");
+              }
+            }}
           />
           <TextField
             className={classes.textField}
+            data-name="transportdetails"
+            onKeyDown={(e) => {
+              if (e.which === 13) {
+                handleNextFocus("remarks");
+              }
+            }}
             label="Transport Details"
             value={InvoiceData.TransportDetails}
             onChange={handleInvoiceDataChange}
@@ -396,33 +456,61 @@ export default function CreateInvoice(props) {
           <TextField
             className={classes.textField}
             label="Remarks"
+            data-name="remarks"
+            onKeyDown={(e) => {
+              if (e.which === 13) {
+                handleNextFocus("paymenttype");
+              }
+            }}
             value={InvoiceData.Remarks}
             onChange={handleInvoiceDataChange}
             name="Remarks"
             variant="outlined"
             fullWidth={true}
           />
-          <Select
+          <Autocomplete
+            options={[
+              "N/A",
+              "Cash",
+              "Check",
+              "Card",
+              "Mobile Payment",
+              "Electronic Bank Transfers",
+            ]}
             value={InvoiceData.PaymentType}
             onChange={handleInvoiceDataChange}
             name="PaymentType"
-            className={classes.textField}
-            variant="outlined"
             fullWidth
-          >
-            <MenuItem value="N/A">
-              <em>None</em>
-            </MenuItem>
-            <MenuItem value="cash">Cash</MenuItem>
-            <MenuItem value="check">Check</MenuItem>
-            <MenuItem value="card">Card</MenuItem>
-            <MenuItem value="mobile">Mobile Payment</MenuItem>
-            <MenuItem value="bankTransfer">Electronic Bank Transfers</MenuItem>
-          </Select>
+            className={classes.textField}
+            autoHighlight={true}
+            autoSelect={true}
+            clearOnBlur={true}
+            blurOnSelect={true}
+            autoComplete={true}
+            openOnFocus={true}
+            disablePortal={true}
+            disableListWrap={true}
+            clearOnEscape={true}
+            renderInput={(params) => (
+              <TextField
+                data-navigation="true"
+                {...params}
+                label="payment"
+                data-name="paymenttype"
+                onKeyDown={(e) => {
+                  if (e.which === 13) {
+                    handleNextFocus("shippedto");
+                  }
+                }}
+                variant="outlined"
+              />
+            )}
+          />
           <Button
             variant="contained"
             size="large"
             color="primary"
+            data-name="shippedto"
             className={classes.button}
             onClick={() => {
               containerRef.current.querySelector(":focus").blur();

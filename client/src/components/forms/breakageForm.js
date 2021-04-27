@@ -1,4 +1,4 @@
-import React, { useState, useRef } from "react";
+import React, { useState, useRef, useCallback } from "react";
 import {
   TextField,
   Grid,
@@ -160,6 +160,25 @@ export default function CreateBreakage(props) {
       nextFocus.focus();
     }
   };
+  const preOrderHelper = useCallback((root) => {
+    if (root !== null) {
+      if (root.tabIndex !== -1) return root;
+      var nodes = root.childNodes;
+      var isFound = null;
+      for (var i = 0; i < nodes.length; i++) {
+        isFound = preOrderHelper(nodes[i]);
+        if (isFound instanceof Element) return isFound;
+      }
+    }
+    return null;
+  }, []);
+  const handleNextFocus = (nextElementName) => {
+    const child = containerRef.current.querySelector(
+      `[data-name="${nextElementName}"]`
+    );
+    preOrderHelper(child).focus();
+  };
+
   return (
     <div ref={containerRef}>
       <Grid container className={classes.button}>
@@ -172,7 +191,7 @@ export default function CreateBreakage(props) {
           </Typography>
         </Grid>
         <Grid item sm={6}>
-        <TextField
+          <TextField
             autoFocus={true}
             name="Date"
             label="Date"
@@ -180,6 +199,11 @@ export default function CreateBreakage(props) {
             value={BreakageData.Date}
             onChange={handleBreakageDataChange}
             className={classes.textField}
+            onKeyDown={(e) => {
+              if (e.which === 13) {
+                handleNextFocus("title");
+              }
+            }}
           />
           <TextField
             className={classes.textField}
@@ -187,6 +211,12 @@ export default function CreateBreakage(props) {
             onChange={handleBreakageDataChange}
             label="Title"
             name="Title"
+            data-name="title"
+            onKeyDown={(e) => {
+              if (e.which === 13) {
+                handleNextFocus("tile");
+              }
+            }}
             variant="outlined"
             fullWidth={true}
           />
