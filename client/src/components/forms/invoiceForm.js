@@ -15,6 +15,7 @@ import {
   Typography,
   makeStyles,
 } from "@material-ui/core";
+import Autocomplete from "@material-ui/lab/Autocomplete";
 import { v4 as uuidv4 } from "uuid";
 import { StockTable, MerchantTable } from "../customTables";
 const useStyles = makeStyles((theme) => ({
@@ -36,7 +37,46 @@ const useStyles = makeStyles((theme) => ({
     maxHeight: 350,
   },
 }));
-
+const IndianState = [
+  { code: "N/A", title: "None" },
+  { code: "AN", title: "Andaman and Nicobar Islands" },
+  { code: "AP", title: "Andhra Pradesh" },
+  { code: "AR", title: "Arunachal Pradesh" },
+  { code: "AS", title: "Assam" },
+  { code: "BR", title: "Bihar" },
+  { code: "CG", title: "Chandigarh" },
+  { code: "CH", title: "Chhattisgarh" },
+  { code: "DN", title: "Dadra and Nagar Haveli" },
+  { code: "DD", title: "Daman and Diu" },
+  { code: "DL", title: "Delhi" },
+  { code: "GA", title: "Goa" },
+  { code: "GJ", title: "Gujarat" },
+  { code: "HR", title: "Haryana" },
+  { code: "HP", title: "Himachal Pradesh" },
+  { code: "JK", title: "Jammu and Kashmir" },
+  { code: "JH", title: "Jharkhand" },
+  { code: "KA", title: "Karnataka" },
+  { code: "KL", title: "Kerala" },
+  { code: "LA", title: "Ladakh" },
+  { code: "LD", title: "Lakshadweep" },
+  { code: "MP", title: "Madhya Pradesh" },
+  { code: "MH", title: "Maharashtra" },
+  { code: "MN", title: "Manipur" },
+  { code: "ML", title: "Meghalaya" },
+  { code: "MZ", title: "Mizoram" },
+  { code: "NL", title: "Nagaland" },
+  { code: "OR", title: "Odisha" },
+  { code: "PY", title: "Puducherry" },
+  { code: "PB", title: "Punjab" },
+  { code: "RJ", title: "Rajasthan" },
+  { code: "SK", title: "Sikkim" },
+  { code: "TN", title: "Tamil Nadu" },
+  { code: "TS", title: "Telangana" },
+  { code: "TR", title: "Tripura" },
+  { code: "UP", title: "Uttar Pradesh" },
+  { code: "UK", title: "Uttarakhand" },
+  { code: "WB", title: "West Bengal" },
+];
 export default function CreateInvoice(props) {
   const classes = useStyles();
   const containerRef = useRef(null);
@@ -52,8 +92,8 @@ export default function CreateInvoice(props) {
     Address: props.Address ?? "",
     PhoneNo1: props.PhoneNo1 ?? "",
     PhoneNo2: props.PhoneNo2 ?? "",
-    State: props.State ?? "",
-    PaymentType: props.PaymentType ?? "",
+    State: props.State ?? { code: "N/A", title: "None" },
+    PaymentType: props.PaymentType ?? "N/A",
     TransportDetails: props.TransportDetails ?? "",
     Transport: props.Transport ?? "",
     Weight: props.Weight ?? 0,
@@ -146,10 +186,10 @@ export default function CreateInvoice(props) {
         };
       });
   };
-  const handleInvoiceDataChange = (event) => {
+  const handleInvoiceDataChange = (event, newValue) => {
     setInvoiceData((prev) => ({
       ...prev,
-      [event.target.name]: event.target.value,
+      [event.target.name]: newValue ?? event.target.value,
     }));
   };
 
@@ -225,6 +265,9 @@ export default function CreateInvoice(props) {
           <Typography gutterBottom className={classes.label}>
             GSTIN
           </Typography>
+          <Typography gutterBottom className={classes.label}>
+            State
+          </Typography>
         </Grid>
         <Grid item sm={4}>
           <TextField
@@ -277,22 +320,38 @@ export default function CreateInvoice(props) {
             value={InvoiceData.GSTIN}
             onChange={handleInvoiceDataChange}
             name="GSTIN"
+            fullWidth={true}
             variant="outlined"
           />
-          <Select
-            className={classes.textField}
+          <Autocomplete
+            options={IndianState}
+            getOptionLabel={(option) => option.title}
+            getOptionSelected={(option) =>
+              option.code === InvoiceData.State.code
+            }
             value={InvoiceData.State}
-            onChange={handleInvoiceDataChange}
             name="State"
-            variant="outlined"
-          >
-            <MenuItem value="">
-              <em>None</em>
-            </MenuItem>
-            <MenuItem value={10}>JK</MenuItem>
-            <MenuItem value={20}>MP</MenuItem>
-            <MenuItem value={30}>UP</MenuItem>
-          </Select>
+            fullWidth
+            className={classes.textField}
+            onChange={handleInvoiceDataChange}
+            autoHighlight={true}
+            autoSelect={true}
+            clearOnBlur={true}
+            blurOnSelect={true}
+            autoComplete={true}
+            openOnFocus={true}
+            disablePortal={true}
+            disableListWrap={true}
+            clearOnEscape={true}
+            renderInput={(params) => (
+              <TextField
+                data-navigation="true"
+                {...params}
+                label="state"
+                variant="outlined"
+              />
+            )}
+          />
         </Grid>
         <Grid item sm={2} className={classes.label}>
           <Typography gutterBottom className={classes.label}>
@@ -304,20 +363,9 @@ export default function CreateInvoice(props) {
           <Typography gutterBottom className={classes.label}>
             Remarks
           </Typography>
-          <Select
-            value={InvoiceData.PaymentType}
-            onChange={handleInvoiceDataChange}
-            name="PaymentType"
-            className={classes.textField}
-            variant="outlined"
-          >
-            <MenuItem value="">
-              <em>None</em>
-            </MenuItem>
-            <MenuItem value={10}>JK</MenuItem>
-            <MenuItem value={20}>MP</MenuItem>
-            <MenuItem value={30}>UP</MenuItem>
-          </Select>
+          <Typography gutterBottom className={classes.label}>
+            Payment Type
+          </Typography>
         </Grid>
         <Grid item sm={4}>
           <TextField
@@ -354,6 +402,23 @@ export default function CreateInvoice(props) {
             variant="outlined"
             fullWidth={true}
           />
+          <Select
+            value={InvoiceData.PaymentType}
+            onChange={handleInvoiceDataChange}
+            name="PaymentType"
+            className={classes.textField}
+            variant="outlined"
+            fullWidth
+          >
+            <MenuItem value="N/A">
+              <em>None</em>
+            </MenuItem>
+            <MenuItem value="cash">Cash</MenuItem>
+            <MenuItem value="check">Check</MenuItem>
+            <MenuItem value="card">Card</MenuItem>
+            <MenuItem value="mobile">Mobile Payment</MenuItem>
+            <MenuItem value="bankTransfer">Electronic Bank Transfers</MenuItem>
+          </Select>
           <Button
             variant="contained"
             size="large"

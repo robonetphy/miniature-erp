@@ -3,12 +3,11 @@ import {
   TextField,
   Grid,
   Button,
-  Select,
-  MenuItem,
   Typography,
   makeStyles,
 } from "@material-ui/core";
 import { CompanyTable } from "../customTables";
+import Autocomplete from "@material-ui/lab/Autocomplete";
 const useStyles = makeStyles((theme) => ({
   textField: {
     margin: "1% 2%",
@@ -35,9 +34,9 @@ const useStyles = makeStyles((theme) => ({
 export default function CreateStock(props) {
   const classes = useStyles();
   const [StockData, setStockData] = useState({
-    Size: props.Size ?? "",
-    Type: props.Type ?? "",
-    HSN: props.HSN ?? "",
+    Size: props.Size ?? "N/A",
+    Type: props.Type ?? "N/A",
+    HSN: props.HSN ?? "N/A",
     Name: props.Name ?? "",
     Rate: props.Rate ?? "",
     Company: props.Company ?? "",
@@ -51,9 +50,9 @@ export default function CreateStock(props) {
   };
   const cleanForm = () => {
     setStockData({
-      Size: "",
-      Type: "",
-      HSN: "",
+      Size: "N/A",
+      Type: "N/A",
+      HSN: "N/A",
       Name: "",
       Rate: "",
       Company: "",
@@ -80,10 +79,10 @@ export default function CreateStock(props) {
     cleanForm();
   };
 
-  const handleStockDataChange = (event) => {
+  const handleStockDataChange = (event, newValue) => {
     setStockData((prev) => ({
       ...prev,
-      [event.target.name]: event.target.value,
+      [event.target.name]: newValue ?? event.target.value,
     }));
   };
   const containerRef = useRef(null);
@@ -140,36 +139,56 @@ export default function CreateStock(props) {
             onChange={handleStockDataChange}
             name="Name"
           />
-          <Select
+          <Autocomplete
+            options={["N/A", "123x123", "122x122", "646x54"]}
             value={StockData.Size}
             name="Size"
-            className={classes.textField}
             onChange={handleStockDataChange}
-            variant="outlined"
+            className={classes.textField}
             fullWidth={true}
-          >
-            <MenuItem value="">
-              <em>None</em>
-            </MenuItem>
-            <MenuItem value={10}>10</MenuItem>
-            <MenuItem value={20}>20</MenuItem>
-            <MenuItem value={30}>30</MenuItem>
-          </Select>
-          <Select
+            autoHighlight={true}
+            autoSelect={true}
+            clearOnBlur={true}
+            blurOnSelect={true}
+            autoComplete={true}
+            openOnFocus={true}
+            disablePortal={true}
+            disableListWrap={true}
+            clearOnEscape={true}
+            renderInput={(params) => (
+              <TextField
+                data-navigation="true"
+                {...params}
+                label="Size"
+                variant="outlined"
+              />
+            )}
+          />
+          <Autocomplete
+            options={["N/A", "ABC", "ABCX", "XCY"]}
             value={StockData.Type}
             name="Type"
             onChange={handleStockDataChange}
             className={classes.textField}
-            variant="outlined"
             fullWidth={true}
-          >
-            <MenuItem value="">
-              <em>None</em>
-            </MenuItem>
-            <MenuItem value={10}>10</MenuItem>
-            <MenuItem value={20}>20</MenuItem>
-            <MenuItem value={30}>30</MenuItem>
-          </Select>
+            autoHighlight={true}
+            autoSelect={true}
+            clearOnBlur={true}
+            blurOnSelect={true}
+            autoComplete={true}
+            openOnFocus={true}
+            disablePortal={true}
+            disableListWrap={true}
+            clearOnEscape={true}
+            renderInput={(params) => (
+              <TextField
+                data-navigation="true"
+                {...params}
+                label="type"
+                variant="outlined"
+              />
+            )}
+          />
           <TextField
             type="number"
             value={StockData.Rate}
@@ -180,21 +199,31 @@ export default function CreateStock(props) {
             className={classes.textField}
             fullWidth={true}
           />
-          <Select
+          <Autocomplete
+            options={["N/A", "12%", "11%", "10%"]}
             value={StockData.HSN}
-            className={classes.textField}
-            onChange={handleStockDataChange}
             name="HSN"
-            variant="outlined"
+            onChange={handleStockDataChange}
+            className={classes.textField}
             fullWidth={true}
-          >
-            <MenuItem value="">
-              <em>None</em>
-            </MenuItem>
-            <MenuItem value={10}>10</MenuItem>
-            <MenuItem value={20}>20</MenuItem>
-            <MenuItem value={30}>30</MenuItem>
-          </Select>
+            autoHighlight={true}
+            autoSelect={true}
+            clearOnBlur={true}
+            blurOnSelect={true}
+            autoComplete={true}
+            openOnFocus={true}
+            disablePortal={true}
+            disableListWrap={true}
+            clearOnEscape={true}
+            renderInput={(params) => (
+              <TextField
+                data-navigation="true"
+                {...params}
+                label="HSN"
+                variant="outlined"
+              />
+            )}
+          />
         </Grid>
         <Grid item sm={12} style={{ textAlignLast: "right" }}>
           {props.mode === undefined ? (

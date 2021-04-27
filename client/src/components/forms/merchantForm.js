@@ -3,11 +3,10 @@ import {
   TextField,
   Grid,
   Button,
-  Select,
-  MenuItem,
   Typography,
   makeStyles,
 } from "@material-ui/core";
+import Autocomplete from "@material-ui/lab/Autocomplete";
 import useEnterNavigation from "../../hooks/useEnterNavigation";
 const useStyles = makeStyles((theme) => ({
   textField: {
@@ -30,7 +29,46 @@ const useStyles = makeStyles((theme) => ({
     margin: "1% 1%",
   },
 }));
-
+const IndianState = [
+  { code: "N/A", title: "None" },
+  { code: "AN", title: "Andaman and Nicobar Islands" },
+  { code: "AP", title: "Andhra Pradesh" },
+  { code: "AR", title: "Arunachal Pradesh" },
+  { code: "AS", title: "Assam" },
+  { code: "BR", title: "Bihar" },
+  { code: "CG", title: "Chandigarh" },
+  { code: "CH", title: "Chhattisgarh" },
+  { code: "DN", title: "Dadra and Nagar Haveli" },
+  { code: "DD", title: "Daman and Diu" },
+  { code: "DL", title: "Delhi" },
+  { code: "GA", title: "Goa" },
+  { code: "GJ", title: "Gujarat" },
+  { code: "HR", title: "Haryana" },
+  { code: "HP", title: "Himachal Pradesh" },
+  { code: "JK", title: "Jammu and Kashmir" },
+  { code: "JH", title: "Jharkhand" },
+  { code: "KA", title: "Karnataka" },
+  { code: "KL", title: "Kerala" },
+  { code: "LA", title: "Ladakh" },
+  { code: "LD", title: "Lakshadweep" },
+  { code: "MP", title: "Madhya Pradesh" },
+  { code: "MH", title: "Maharashtra" },
+  { code: "MN", title: "Manipur" },
+  { code: "ML", title: "Meghalaya" },
+  { code: "MZ", title: "Mizoram" },
+  { code: "NL", title: "Nagaland" },
+  { code: "OR", title: "Odisha" },
+  { code: "PY", title: "Puducherry" },
+  { code: "PB", title: "Punjab" },
+  { code: "RJ", title: "Rajasthan" },
+  { code: "SK", title: "Sikkim" },
+  { code: "TN", title: "Tamil Nadu" },
+  { code: "TS", title: "Telangana" },
+  { code: "TR", title: "Tripura" },
+  { code: "UP", title: "Uttar Pradesh" },
+  { code: "UK", title: "Uttarakhand" },
+  { code: "WB", title: "West Bengal" },
+];
 export default function AddMerchant(props) {
   const classes = useStyles();
   const [MerchantData, setMerchantData] = useState({
@@ -40,7 +78,7 @@ export default function AddMerchant(props) {
     PhoneNo2: props.PhoneNo2 ?? "",
     Email: props.Email ?? "",
     PANNo: props.PANNo ?? "",
-    State: props.State ?? "",
+    State: props.State ?? { code: "N/A", title: "None" },
     GSTIN: props.GSTIN ?? "",
   });
 
@@ -56,7 +94,7 @@ export default function AddMerchant(props) {
       PhoneNo2: "",
       Email: "",
       PANNo: "",
-      State: "",
+      State: { code: "N/A", title: "None" },
       GSTIN: "",
     });
   };
@@ -69,10 +107,10 @@ export default function AddMerchant(props) {
     cleanForm();
   };
 
-  const handleMerchantDataChange = (event) => {
+  const handleMerchantDataChange = (event, newValue) => {
     setMerchantData((prev) => ({
       ...prev,
-      [event.target.name]: event.target.value,
+      [event.target.name]: newValue ?? event.target.value,
     }));
   };
   const containerRef = useRef(null);
@@ -172,22 +210,35 @@ export default function AddMerchant(props) {
           variant="outlined"
           fullWidth={true}
         />
-        <Select
-          data-navigation="true"
-          onChange={handleMerchantDataChange}
-          name="State"
+        <Autocomplete
+          options={IndianState}
+          getOptionLabel={(option) => option.title}
+          getOptionSelected={(option) =>
+            option.code === MerchantData.State.code
+          }
           value={MerchantData.State}
+          name="State"
           className={classes.textField}
-          variant="outlined"
+          onChange={handleMerchantDataChange}
           fullWidth={true}
-        >
-          <MenuItem value="">
-            <em>None</em>
-          </MenuItem>
-          <MenuItem value={10}>JK</MenuItem>
-          <MenuItem value={20}>MP</MenuItem>
-          <MenuItem value={30}>UP</MenuItem>
-        </Select>
+          autoHighlight={true}
+          autoSelect={true}
+          clearOnBlur={true}
+          blurOnSelect={true}
+          autoComplete={true}
+          openOnFocus={true}
+          disablePortal={true}
+          disableListWrap={true}
+          clearOnEscape={true}
+          renderInput={(params) => (
+            <TextField
+              data-navigation="true"
+              {...params}
+              label="state"
+              variant="outlined"
+            />
+          )}
+        />
         <TextField
           data-navigation="true"
           className={classes.textField}
