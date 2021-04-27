@@ -50,8 +50,8 @@ const CustomTable = forwardRef((props, ref) => {
   const classes = useStyles(props);
   const containerRef = useRef(null);
   const [TableDataManager, setTableDataManager] = useState({
-    data: props.data,
-    searschText: props.searchText ?? "",
+    // data: props.data,
+    searchText: props.searchText ?? "",
     page: 0,
     rowsPerPage: 10,
     selectedID: props.data.length ? props.data[0].key : null,
@@ -68,21 +68,9 @@ const CustomTable = forwardRef((props, ref) => {
   };
   const onSearchTextChange = (e) => {
     setTableDataManager((prevData) => {
-      let filteredData = [];
-      let searchText = e.target.value ?? "";
-      filteredData = props.data.filter((e) => {
-        let mathesItems = Object.values(e);
-        let retVal = false;
-        const regex = new RegExp(searchText, "gi");
-        mathesItems.forEach((e) => {
-          if (typeof e !== "string") e = e.toString();
-          retVal = !retVal ? e.match(regex) : retVal;
-        });
-        return retVal;
-      });
       return {
-        data: filteredData,
-        searchText: searchText,
+        ...prevData,
+        searchText: e.target.value,
       };
     });
   };
@@ -158,13 +146,6 @@ const CustomTable = forwardRef((props, ref) => {
   useEffect(() => {
     const container = containerRef.current;
     container.addEventListener("keydown", handleKeyDown);
-    setTableDataManager({
-      data: props.data,
-      searschText: props.searchText ?? "",
-      page: 0,
-      rowsPerPage: 10,
-      selectedID: props.data.length ? props.data[0].key : null,
-    });
     return () => {
       container.removeEventListener("keydown", handleKeyDown);
     };
@@ -203,8 +184,27 @@ const CustomTable = forwardRef((props, ref) => {
                 </TableRow>
               </TableHead>
               <TableBody className={classes.tableBody}>
-                {TableDataManager.data.length
-                  ? TableDataManager.data
+                {props.data.length
+                  ? props.data
+                      .filter((e) => {
+                        let matchItems = Object.values(e);
+                        let retVal = false;
+                        for (var i = 0; i < matchItems.length; i++) {
+                          let e = matchItems[i];
+                          if (typeof e !== "string") e = e.toString();
+                          if (
+                            e
+                              .toLowerCase()
+                              .includes(
+                                TableDataManager.searchText.toLowerCase()
+                              )
+                          ) {
+                            retVal = true;
+                            break;
+                          }
+                        }
+                        return retVal;
+                      })
                       .slice(
                         TableDataManager.page * TableDataManager.rowsPerPage,
                         TableDataManager.page * TableDataManager.rowsPerPage +
@@ -253,7 +253,7 @@ const CustomTable = forwardRef((props, ref) => {
           <TablePagination
             rowsPerPageOptions={[10, 25, 100]}
             component="div"
-            count={TableDataManager.data.length}
+            count={props.data.length}
             rowsPerPage={TableDataManager.rowsPerPage}
             page={TableDataManager.page}
             onChangePage={handleChangePage}
