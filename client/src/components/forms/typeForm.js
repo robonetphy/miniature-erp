@@ -1,4 +1,4 @@
-import React, { useState, useRef } from "react";
+import React, { useState, useRef, useCallback, useEffect } from "react";
 import {
   TextField,
   Grid,
@@ -29,7 +29,7 @@ const useStyles = makeStyles((theme) => ({
     margin: "1% 5%",
   },
 }));
-export default function ManageType() {
+export default function ManageType(props) {
   const classes = useStyles();
   const containerRef = useRef(null);
   const [TypeData, setTypeData] = useState({
@@ -54,6 +54,21 @@ export default function ManageType() {
     }));
   };
   useEnterNavigation(containerRef);
+  const handleEscape = useCallback(
+    (e) => {
+      if (e.which === 27) {
+        props.closeModal();
+      }
+    },
+    [props]
+  );
+  useEffect(() => {
+    const container = containerRef.current;
+    container.addEventListener("keydown", handleEscape);
+    return () => {
+      container.removeEventListener("keydown", handleEscape);
+    };
+  }, [containerRef, handleEscape]);
   return (
     <div ref={containerRef}>
       <Grid container className={classes.button}>
@@ -95,7 +110,7 @@ export default function ManageType() {
           title: "",
           tableBodyHeight: "500px",
           data: TypeData.TableData,
-          autoFocus:false,
+          autoFocus: false,
         }}
       ></CustomTable>
     </div>

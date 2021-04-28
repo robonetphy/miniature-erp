@@ -37,9 +37,6 @@ function CustomModal({
       open={showModal}
       aria-labelledby="modal-label"
       className={classes.modal}
-      onEscapeKeyDown={() => {
-        closeModal();
-      }}
       container={() => rootRef.current}
     >
       <div className={classes.paper}>

@@ -35,15 +35,15 @@ const useEnterNavigation = (containerRef) => {
         preOrderHelper(child).focus();
       }
     },
-    [preOrderHelper,containerRef]
+    [preOrderHelper, containerRef]
   );
   useEffect(() => {
-    const container= containerRef.current;
+    const container = containerRef.current;
     container.addEventListener("keydown", handleKeyDown);
     return () => {
       container.removeEventListener("keydown", handleKeyDown);
     };
-  }, [handleKeyDown,containerRef]);
+  }, [handleKeyDown, containerRef]);
 };
 export default useEnterNavigation;
 //Add data-navigation=true as property to consider as element get focused during enter.

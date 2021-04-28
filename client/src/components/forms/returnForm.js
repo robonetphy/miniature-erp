@@ -1,4 +1,4 @@
-import React, { useState, useRef, useCallback } from "react";
+import React, { useState, useRef, useCallback, useEffect } from "react";
 import {
   TextField,
   Grid,
@@ -15,6 +15,7 @@ import {
 } from "@material-ui/core";
 import { v4 as uuidv4 } from "uuid";
 import { StockTable, MerchantTable } from "../customTables";
+import ConfirmationModal from "../confirmationModal";
 const useStyles = makeStyles((theme) => ({
   textField: {
     margin: "1% 2%",
@@ -43,6 +44,9 @@ const useStyles = makeStyles((theme) => ({
 export default function CreateReturn(props) {
   const classes = useStyles();
   const containerRef = useRef(null);
+  const isDisabled = () => {
+    return props.mode === "Delete";
+  };
   // useEnterNavigation(containerRef);
   const [ReturnData, setReturnData] = useState({
     Remarks: props.Remarks ?? "",
@@ -58,6 +62,8 @@ export default function CreateReturn(props) {
     LastReturn: props.LastReturn ?? "R-1",
     showMerchantTable: false,
     showStockTable: false,
+    showConfirmation: false,
+    isDataChanged: false,
   });
   const save = () => {
     //Send Data to Server
@@ -78,6 +84,8 @@ export default function CreateReturn(props) {
       PhoneNo1: "",
       PhoneNo2: "",
       LastReturn: "R-1",
+      showConfirmation: false,
+      isDataChanged: false,
     });
   };
   const onMerchantSelect = (data) => {
@@ -95,6 +103,7 @@ export default function CreateReturn(props) {
           Address: Address,
           PhoneNo1: PhoneNo1,
           PhoneNo2: PhoneNo2,
+          isDataChanged: true,
           showMerchantTable: false,
         };
       });
@@ -111,8 +120,8 @@ export default function CreateReturn(props) {
           type: Type,
           rate: Rate,
         } = data;
-        let TotalQty = prev.TotalQty + parseInt(Qty);
-        let TotalAmount = prev.TotalAmount + parseInt(Qty) * parseInt(Rate);
+        let TotalQty = prev.TotalQty + parseFloat(Qty);
+        let TotalAmount = prev.TotalAmount + parseFloat(Qty) * parseFloat(Rate);
         let TotalItem = prev.TotalItem + 1;
         return {
           ...prev,
@@ -127,12 +136,13 @@ export default function CreateReturn(props) {
               type: Type,
               qty: Qty,
               rate: Rate,
-              subtotal: parseInt(Rate) * parseInt(Qty),
+              subtotal: parseFloat(Rate) * parseFloat(Qty),
               key: uuidv4(),
             },
             ...prev.TableRows,
           ],
           showStockTable: false,
+          isDataChanged: true,
         };
       });
   };
@@ -140,6 +150,7 @@ export default function CreateReturn(props) {
     setReturnData((prev) => ({
       ...prev,
       [event.target.name]: event.target.value,
+      isDataChanged: true,
     }));
   };
   const saveAndClose = (e) => {
@@ -153,10 +164,10 @@ export default function CreateReturn(props) {
   const handleRemove = (indexOfRow) => {
     setReturnData((prev) => {
       let TotalQty =
-        prev.TotalQty - parseInt(prev.TableRows[indexOfRow]["qty"]);
+        prev.TotalQty - parseFloat(prev.TableRows[indexOfRow]["qty"]);
       let TotalAmount =
-        prev.TotalAmount - parseInt(prev.TableRows[indexOfRow]["subtotal"]);
-      let TotalItem = parseInt(prev.TotalItem) - 1;
+        prev.TotalAmount - parseFloat(prev.TableRows[indexOfRow]["subtotal"]);
+      let TotalItem = parseFloat(prev.TotalItem) - 1;
       const TableRows = prev.TableRows.filter(
         (data, index) => index !== indexOfRow
       );
@@ -166,6 +177,7 @@ export default function CreateReturn(props) {
         TotalAmount: TotalAmount,
         TotalItem: TotalItem,
         TableRows: TableRows,
+        isDataChanged: true,
       };
     });
   };
@@ -176,10 +188,10 @@ export default function CreateReturn(props) {
       const TableRows = prev.TableRows.map((data, index) => {
         if (index === indexOfRow) {
           data[name] = value;
-          data["subtotal"] = parseInt(data["qty"]) * parseInt(data["rate"]);
+          data["subtotal"] = parseFloat(data["qty"]) * parseFloat(data["rate"]);
         }
-        TotalAmount += parseInt(data["subtotal"]);
-        TotalQty += parseInt(data["qty"]);
+        TotalAmount += parseFloat(data["subtotal"]);
+        TotalQty += parseFloat(data["qty"]);
         return data;
       });
       return {
@@ -187,6 +199,7 @@ export default function CreateReturn(props) {
         TableRows: TableRows,
         TotalAmount: TotalAmount,
         TotalQty: TotalQty,
+        isDataChanged: true,
       };
     });
   };
@@ -195,12 +208,15 @@ export default function CreateReturn(props) {
       handleRemove(index);
     }
   };
+  const handleNextFocus = (nextLook) => {
+    var nextFocus = containerRef.current.querySelectorAll(
+      `[data-name="${nextLook}"]`
+    )[0];
+    preOrderHelper(nextFocus).focus();
+  };
   const handleEnterKeyDown = (e, nextLook) => {
     if (e.which === 13) {
-      var nextFocus = containerRef.current.querySelectorAll(nextLook)[0];
-      while (nextFocus && nextFocus.tabIndex === -1)
-        nextFocus = nextFocus.childNodes[0];
-      nextFocus.focus();
+      handleNextFocus(nextLook);
     }
   };
   const preOrderHelper = useCallback((root) => {
@@ -215,13 +231,29 @@ export default function CreateReturn(props) {
     }
     return null;
   }, []);
-  const handleNextFocus = (nextElementName) => {
-    const child = containerRef.current.querySelector(
-      `[data-name="${nextElementName}"]`
-    );
-    preOrderHelper(child).focus();
-  };
-
+  const handleCloseConfirmation = useCallback(() => {
+    if (ReturnData.isDataChanged)
+      setReturnData((prev) => ({
+        ...prev,
+        showConfirmation: true,
+      }));
+    else props.closeModal();
+  }, [props, ReturnData]);
+  const handleEscape = useCallback(
+    (e) => {
+      if (e.which === 27) {
+        handleCloseConfirmation();
+      }
+    },
+    [handleCloseConfirmation]
+  );
+  useEffect(() => {
+    const container = containerRef.current;
+    container.addEventListener("keydown", handleEscape);
+    return () => {
+      container.removeEventListener("keydown", handleEscape);
+    };
+  }, [containerRef, handleEscape]);
   return (
     <div ref={containerRef}>
       <Grid container spacing={1} className={classes.button}>
@@ -230,11 +262,11 @@ export default function CreateReturn(props) {
             Last Return
           </Typography>
           <TextField
+            disabled={isDisabled()}
             className={classes.textField}
             label="Name"
             variant="outlined"
             fullWidth={true}
-            disabled={true}
             value={ReturnData.MerchantName}
           />
         </Grid>
@@ -243,6 +275,7 @@ export default function CreateReturn(props) {
             {ReturnData.LastReturn}
           </Typography>
           <Button
+            disabled={isDisabled()}
             variant="contained"
             size="large"
             color="primary"
@@ -269,13 +302,12 @@ export default function CreateReturn(props) {
         </Grid>
         <Grid item sm={4}>
           <TextField
+            disabled={isDisabled()}
             className={classes.textField}
             type="date"
             data-name="date"
             onKeyDown={(e) => {
-              if (e.which === 13) {
-                handleNextFocus("phoneno1");
-              }
+              handleEnterKeyDown(e, "phoneno1");
             }}
             fullWidth={true}
             value={ReturnData.Date}
@@ -283,11 +315,10 @@ export default function CreateReturn(props) {
             name="Date"
           />
           <TextField
+            disabled={isDisabled()}
             className={classes.textField}
             onKeyDown={(e) => {
-              if (e.which === 13) {
-                handleNextFocus("phoneno2");
-              }
+              handleEnterKeyDown(e, "phoneno2");
             }}
             data-name="phoneno1"
             label="PhoneNo1"
@@ -298,10 +329,9 @@ export default function CreateReturn(props) {
           />
           <TextField
             className={classes.textField}
+            disabled={isDisabled()}
             onKeyDown={(e) => {
-              if (e.which === 13) {
-                handleNextFocus("address");
-              }
+              handleEnterKeyDown(e, "address");
             }}
             data-name="phoneno2"
             label="PhoneNo2"
@@ -312,10 +342,9 @@ export default function CreateReturn(props) {
           />
           <TextField
             className={classes.textField}
+            disabled={isDisabled()}
             onKeyDown={(e) => {
-              if (e.which === 13) {
-                handleNextFocus("remarks");
-              }
+              handleEnterKeyDown(e, "remarks");
             }}
             data-name="address"
             label="Address"
@@ -336,11 +365,10 @@ export default function CreateReturn(props) {
         <Grid item sm={4}>
           <TextField
             className={classes.textField}
+            disabled={isDisabled()}
             label="Remarks"
-            onKeyDown={(e)=>{
-              if (e.which === 13) {
-                handleNextFocus("tile");
-              }
+            onKeyDown={(e) => {
+              handleEnterKeyDown(e, "tile");
             }}
             data-name="remarks"
             variant="outlined"
@@ -354,6 +382,7 @@ export default function CreateReturn(props) {
           <Button
             variant="contained"
             size="large"
+            disabled={isDisabled()}
             color="primary"
             className={classes.button}
             onClick={() => {
@@ -398,13 +427,14 @@ export default function CreateReturn(props) {
                   <TextField
                     type="number"
                     InputProps={{ inputProps: { min: 1 } }}
+                    disabled={isDisabled()}
                     autoFocus={index === 0 ? true : false}
                     onChange={(e) => {
                       handleUpdate(index, e.target.value, "qty");
                     }}
                     onKeyDown={(e) => {
                       handleDeleteKeyDown(e, index);
-                      handleEnterKeyDown(e, "[data-name=rate]");
+                      handleEnterKeyDown(e, "rate");
                     }}
                     value={row.qty}
                   />
@@ -413,6 +443,7 @@ export default function CreateReturn(props) {
                   <TextField
                     data-name="rate"
                     type="number"
+                    disabled={isDisabled()}
                     InputProps={{ inputProps: { min: 1 } }}
                     value={row.rate}
                     onChange={(e) => {
@@ -420,7 +451,7 @@ export default function CreateReturn(props) {
                     }}
                     onKeyDown={(e) => {
                       handleDeleteKeyDown(e, index);
-                      handleEnterKeyDown(e, "[data-name=tile]");
+                      handleEnterKeyDown(e, "tile");
                     }}
                   />
                 </TableCell>
@@ -489,7 +520,7 @@ export default function CreateReturn(props) {
             size="large"
             color="primary"
             className={classes.button}
-            onClick={props.closeModal}
+            onClick={handleCloseConfirmation}
           >
             Close
           </Button>
@@ -513,6 +544,15 @@ export default function CreateReturn(props) {
           }}
           onMerchantDataSelect={onMerchantSelect}
         />
+      ) : null}
+      {ReturnData.showConfirmation ? (
+        <ConfirmationModal
+          showConfirmation={ReturnData.showConfirmation}
+          closeConfirmation={() => {
+            setReturnData((prev) => ({ ...prev, showConfirmation: false }));
+          }}
+          okBtnCallBack={props.closeModal}
+        ></ConfirmationModal>
       ) : null}
     </div>
   );

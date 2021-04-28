@@ -1,4 +1,4 @@
-import React, { useState, useRef, useCallback } from "react";
+import React, { useState, useRef, useCallback, useEffect } from "react";
 import {
   TextField,
   Grid,
@@ -16,6 +16,7 @@ import {
 import Autocomplete from "@material-ui/lab/Autocomplete";
 import { v4 as uuidv4 } from "uuid";
 import { StockTable, MerchantTable } from "../customTables";
+import ConfirmationModal from "../confirmationModal";
 const useStyles = makeStyles((theme) => ({
   textField: {
     margin: "1% 2%",
@@ -78,6 +79,9 @@ const IndianState = [
 export default function CreateInvoice(props) {
   const classes = useStyles();
   const containerRef = useRef(null);
+  const isDisabled = () => {
+    return props.mode === "Delete";
+  };
   // useEnterNavigation(containerRef);
   const [InvoiceData, setInvoiceData] = useState({
     Remarks: props.Remarks ?? "",
@@ -100,6 +104,8 @@ export default function CreateInvoice(props) {
     showMerchantTable: false,
     showStockTable: false,
     showMerchantCallback: null,
+    showConfirmation: false,
+    isDataChanged: false,
   });
   const save = () => {
     //Send Data to Server
@@ -122,6 +128,7 @@ export default function CreateInvoice(props) {
           PhoneNo1: PhoneNo1,
           PhoneNo2: PhoneNo2,
           GSTIN: GSTIN,
+          isDataChanged: true,
           showMerchantTable: false,
         };
       });
@@ -147,6 +154,7 @@ export default function CreateInvoice(props) {
             GSTIN: GSTIN,
           },
           showMerchantTable: false,
+          isDataChanged: true,
         };
       });
     handleNextFocus("tile");
@@ -161,8 +169,8 @@ export default function CreateInvoice(props) {
           rate: Rate,
           hsn: HSN,
         } = data;
-        let TotalQty = prev.TotalQty + parseInt(Qty);
-        let TotalAmount = prev.TotalAmount + parseInt(Qty) * parseInt(Rate);
+        let TotalQty = prev.TotalQty + parseFloat(Qty);
+        let TotalAmount = prev.TotalAmount + parseFloat(Qty) * parseFloat(Rate);
         let Count = prev.Count + 1;
         return {
           ...prev,
@@ -177,12 +185,13 @@ export default function CreateInvoice(props) {
               rate: Rate,
               hsn: HSN,
               discount: 0,
-              subtotal: parseInt(Rate) * parseInt(Qty),
+              subtotal: parseFloat(Rate) * parseFloat(Qty),
               key: uuidv4(),
             },
             ...prev.TableRows,
           ],
           showStockTable: false,
+          isDataChanged: true,
         };
       });
   };
@@ -190,16 +199,17 @@ export default function CreateInvoice(props) {
     setInvoiceData((prev) => ({
       ...prev,
       [event.target.name]: newValue ?? event.target.value,
+      isDataChanged: true,
     }));
   };
 
   const handleRemove = (indexOfRow) => {
     setInvoiceData((prev) => {
       let TotalQty =
-        prev.TotalQty - parseInt(prev.TableRows[indexOfRow]["qty"]);
+        prev.TotalQty - parseFloat(prev.TableRows[indexOfRow]["qty"]);
       let TotalAmount =
-        prev.TotalAmount - parseInt(prev.TableRows[indexOfRow]["subtotal"]);
-      let Count = parseInt(prev.Count) - 1;
+        prev.TotalAmount - parseFloat(prev.TableRows[indexOfRow]["subtotal"]);
+      let Count = parseFloat(prev.Count) - 1;
       const TableRows = prev.TableRows.filter(
         (data, index) => index !== indexOfRow
       );
@@ -209,6 +219,7 @@ export default function CreateInvoice(props) {
         TotalAmount: TotalAmount,
         Count: Count,
         TableRows: TableRows,
+        isDataChanged: true,
       };
     });
   };
@@ -219,12 +230,12 @@ export default function CreateInvoice(props) {
       const TableRows = prev.TableRows.map((data, index) => {
         if (index === indexOfRow) {
           data[name] = value;
-          data["subtotal"] = parseInt(data["qty"]) * parseInt(data["rate"]);
+          data["subtotal"] = parseFloat(data["qty"]) * parseFloat(data["rate"]);
           data["subtotal"] -=
-            (parseInt(data["discount"]) * data["subtotal"]) / 100;
+            (parseFloat(data["discount"]) * data["subtotal"]) / 100;
         }
-        TotalAmount += parseInt(data["subtotal"]);
-        TotalQty += parseInt(data["qty"]);
+        TotalAmount += parseFloat(data["subtotal"]);
+        TotalQty += parseFloat(data["qty"]);
         return data;
       });
       return {
@@ -232,6 +243,7 @@ export default function CreateInvoice(props) {
         TableRows: TableRows,
         TotalAmount: TotalAmount,
         TotalQty: TotalQty,
+        isDataChanged: true,
       };
     });
   };
@@ -242,10 +254,7 @@ export default function CreateInvoice(props) {
   };
   const handleEnterKeyDown = (e, nextLook) => {
     if (e.which === 13) {
-      var nextFocus = containerRef.current.querySelectorAll(nextLook)[0];
-      while (nextFocus && nextFocus.tabIndex === -1)
-        nextFocus = nextFocus.childNodes[0];
-      nextFocus.focus();
+      handleNextFocus(nextLook);
     }
   };
   const preOrderHelper = useCallback((root) => {
@@ -260,13 +269,35 @@ export default function CreateInvoice(props) {
     }
     return null;
   }, []);
-  const handleNextFocus = (nextElementName) => {
-    const child = containerRef.current.querySelector(
-      `[data-name="${nextElementName}"]`
-    );
-    preOrderHelper(child).focus();
+  const handleNextFocus = (nextLook) => {
+    var nextFocus = containerRef.current.querySelectorAll(
+      `[data-name="${nextLook}"]`
+    )[0];
+    preOrderHelper(nextFocus).focus();
   };
-
+  const handleCloseConfirmation = useCallback(() => {
+    if (InvoiceData.isDataChanged)
+      setInvoiceData((prev) => ({
+        ...prev,
+        showConfirmation: true,
+      }));
+    else props.closeModal();
+  }, [props, InvoiceData]);
+  const handleEscape = useCallback(
+    (e) => {
+      if (e.which === 27) {
+        handleCloseConfirmation();
+      }
+    },
+    [handleCloseConfirmation]
+  );
+  useEffect(() => {
+    const container = containerRef.current;
+    container.addEventListener("keydown", handleEscape);
+    return () => {
+      container.removeEventListener("keydown", handleEscape);
+    };
+  }, [containerRef, handleEscape]);
   return (
     <div ref={containerRef}>
       <Grid container className={classes.button}>
@@ -289,6 +320,7 @@ export default function CreateInvoice(props) {
         </Grid>
         <Grid item sm={4}>
           <TextField
+            disabled={isDisabled()}
             autoFocus={true}
             className={classes.textField}
             label="Date"
@@ -297,9 +329,7 @@ export default function CreateInvoice(props) {
             name="Date"
             type="date"
             onKeyDown={(e) => {
-              if (e.which === 13) {
-                handleNextFocus("merchant");
-              }
+              handleEnterKeyDown(e, "merchant");
             }}
             fullWidth={true}
           />
@@ -314,6 +344,7 @@ export default function CreateInvoice(props) {
           />
           <Button
             variant="contained"
+            disabled={isDisabled()}
             size="large"
             color="primary"
             data-name="merchant"
@@ -332,15 +363,14 @@ export default function CreateInvoice(props) {
           <TextField
             className={classes.textField}
             label="Address"
+            disabled={isDisabled()}
             variant="outlined"
             value={InvoiceData.Address}
             onChange={handleInvoiceDataChange}
             name="Address"
             data-name="address"
             onKeyDown={(e) => {
-              if (e.which === 13) {
-                handleNextFocus("gstin");
-              }
+              handleEnterKeyDown(e, "gstin");
             }}
             fullWidth={true}
           />
@@ -349,17 +379,17 @@ export default function CreateInvoice(props) {
             label="GSTIN"
             value={InvoiceData.GSTIN}
             onChange={handleInvoiceDataChange}
+            disabled={isDisabled()}
             name="GSTIN"
             fullWidth={true}
             data-name="gstin"
             onKeyDown={(e) => {
-              if (e.which === 13) {
-                handleNextFocus("state");
-              }
+              handleEnterKeyDown(e, "state");
             }}
             variant="outlined"
           />
           <Autocomplete
+            disabled={isDisabled()}
             options={IndianState}
             getOptionLabel={(option) => option.title}
             getOptionSelected={(option) =>
@@ -387,9 +417,7 @@ export default function CreateInvoice(props) {
                 label="state"
                 data-name="state"
                 onKeyDown={(e) => {
-                  if (e.which === 13) {
-                    handleNextFocus("phoneno1");
-                  }
+                  handleEnterKeyDown(e, "phoneno1");
                 }}
                 variant="outlined"
               />
@@ -412,6 +440,7 @@ export default function CreateInvoice(props) {
         </Grid>
         <Grid item sm={4}>
           <TextField
+            disabled={isDisabled()}
             className={classes.textField}
             label="Phone No1"
             value={InvoiceData.PhoneNo1}
@@ -420,12 +449,11 @@ export default function CreateInvoice(props) {
             variant="outlined"
             data-name="phoneno1"
             onKeyDown={(e) => {
-              if (e.which === 13) {
-                handleNextFocus("phoneno2");
-              }
+              handleEnterKeyDown(e, "phoneno2");
             }}
           />
           <TextField
+            disabled={isDisabled()}
             className={classes.textField}
             label="Phone No2"
             value={InvoiceData.PhoneNo2}
@@ -434,18 +462,15 @@ export default function CreateInvoice(props) {
             variant="outlined"
             data-name="phoneno2"
             onKeyDown={(e) => {
-              if (e.which === 13) {
-                handleNextFocus("transportdetails");
-              }
+              handleEnterKeyDown(e, "transportdetails");
             }}
           />
           <TextField
+            disabled={isDisabled()}
             className={classes.textField}
             data-name="transportdetails"
             onKeyDown={(e) => {
-              if (e.which === 13) {
-                handleNextFocus("remarks");
-              }
+              handleEnterKeyDown(e, "remarks");
             }}
             label="Transport Details"
             value={InvoiceData.TransportDetails}
@@ -455,13 +480,12 @@ export default function CreateInvoice(props) {
             fullWidth={true}
           />
           <TextField
+            disabled={isDisabled()}
             className={classes.textField}
             label="Remarks"
             data-name="remarks"
             onKeyDown={(e) => {
-              if (e.which === 13) {
-                handleNextFocus("paymenttype");
-              }
+              handleEnterKeyDown(e, "paymenttype");
             }}
             value={InvoiceData.Remarks}
             onChange={handleInvoiceDataChange}
@@ -470,6 +494,7 @@ export default function CreateInvoice(props) {
             fullWidth={true}
           />
           <Autocomplete
+            disabled={isDisabled()}
             options={[
               "N/A",
               "Cash",
@@ -500,15 +525,14 @@ export default function CreateInvoice(props) {
                 label="payment"
                 data-name="paymenttype"
                 onKeyDown={(e) => {
-                  if (e.which === 13) {
-                    handleNextFocus("shippedto");
-                  }
+                  handleEnterKeyDown(e, "shippedto");
                 }}
                 variant="outlined"
               />
             )}
           />
           <Button
+            disabled={isDisabled()}
             variant="contained"
             size="large"
             color="primary"
@@ -526,6 +550,7 @@ export default function CreateInvoice(props) {
             Shipped To
           </Button>
           <Button
+            disabled={isDisabled()}
             variant="contained"
             size="large"
             color="primary"
@@ -564,6 +589,7 @@ export default function CreateInvoice(props) {
                 </TableCell>
                 <TableCell>
                   <TextField
+                    disabled={isDisabled()}
                     type="number"
                     InputProps={{ inputProps: { min: 1 } }}
                     autoFocus={index === 0 ? true : false}
@@ -579,6 +605,7 @@ export default function CreateInvoice(props) {
                 </TableCell>
                 <TableCell>
                   <TextField
+                    disabled={isDisabled()}
                     data-name="rate"
                     type="number"
                     InputProps={{ inputProps: { min: 1 } }}
@@ -594,6 +621,7 @@ export default function CreateInvoice(props) {
                 </TableCell>
                 <TableCell component="th" scope="row">
                   <TextField
+                    disabled={isDisabled()}
                     data-name="discount"
                     type="number"
                     InputProps={{ inputProps: { min: 0 } }}
@@ -645,6 +673,7 @@ export default function CreateInvoice(props) {
         </Grid>
         <Grid item sm={4}>
           <TextField
+            disabled={isDisabled()}
             className={classes.textField}
             label="Transport"
             variant="outlined"
@@ -678,7 +707,7 @@ export default function CreateInvoice(props) {
             size="large"
             color="primary"
             className={classes.button}
-            onClick={props.closeModal}
+            onClick={handleCloseConfirmation}
           >
             Close
           </Button>
@@ -702,6 +731,15 @@ export default function CreateInvoice(props) {
           }}
           onMerchantDataSelect={InvoiceData.showMerchantCallback}
         />
+      ) : null}
+      {InvoiceData.showConfirmation ? (
+        <ConfirmationModal
+          showConfirmation={InvoiceData.showConfirmation}
+          closeConfirmation={() => {
+            setInvoiceData((prev) => ({ ...prev, showConfirmation: false }));
+          }}
+          okBtnCallBack={props.closeModal}
+        ></ConfirmationModal>
       ) : null}
     </div>
   );

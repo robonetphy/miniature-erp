@@ -1,4 +1,4 @@
-import React, { useState, useRef, useCallback } from "react";
+import React, { useState, useRef, useCallback, useEffect } from "react";
 import {
   TextField,
   Grid,
@@ -15,6 +15,7 @@ import {
 } from "@material-ui/core";
 import { v4 as uuidv4 } from "uuid";
 import { StockTable } from "../customTables";
+import ConfirmationModal from "../confirmationModal";
 const useStyles = makeStyles((theme) => ({
   textField: {
     margin: "1% 2%",
@@ -41,6 +42,9 @@ const useStyles = makeStyles((theme) => ({
 export default function CreateBreakage(props) {
   const classes = useStyles();
   const containerRef = useRef(null);
+  const isDisabled = () => {
+    return props.mode === "Delete";
+  };
   const [BreakageData, setBreakageData] = useState({
     Date: props.Date ?? new Date().toISOString().substring(0, 10),
     Title: props.Title ?? "",
@@ -50,6 +54,8 @@ export default function CreateBreakage(props) {
     TotalItem: props.TotalItem ?? 0,
     TableRows: props.TableRows ?? [],
     showStockTable: false,
+    showConfirmation: false,
+    isDataChanged: false,
   });
   const save = () => {
     //Send Data to Server
@@ -65,14 +71,16 @@ export default function CreateBreakage(props) {
       TotalItem: 0,
       TableRows: [],
       showStockTable: false,
+      showConfirmation: false,
+      isDataChanged: false,
     });
   };
   const onTileSelect = (data) => {
     if (data)
       setBreakageData((prev) => {
         const { name: Name, qty: Qty, rate: Rate } = data;
-        let TotalQty = prev.TotalQty + parseInt(Qty);
-        let TotalAmount = prev.TotalAmount + parseInt(Qty) * parseInt(Rate);
+        let TotalQty = prev.TotalQty + parseFloat(Qty);
+        let TotalAmount = prev.TotalAmount + parseFloat(Qty) * parseFloat(Rate);
         let TotalItem = prev.TotalItem + 1;
         return {
           ...prev,
@@ -84,12 +92,13 @@ export default function CreateBreakage(props) {
               name: Name,
               qty: Qty,
               rate: Rate,
-              subtotal: parseInt(Rate) * parseInt(Qty),
+              subtotal: parseFloat(Rate) * parseFloat(Qty),
               key: uuidv4(),
             },
             ...prev.TableRows,
           ],
           showStockTable: false,
+          isDataChanged: true,
         };
       });
   };
@@ -97,6 +106,7 @@ export default function CreateBreakage(props) {
     setBreakageData((prev) => ({
       ...prev,
       [event.target.name]: event.target.value,
+      isDataChanged: true,
     }));
   };
   const saveAndClose = (e) => {
@@ -110,10 +120,10 @@ export default function CreateBreakage(props) {
   const handleRemove = (indexOfRow) => {
     setBreakageData((prev) => {
       let TotalQty =
-        prev.TotalQty - parseInt(prev.TableRows[indexOfRow]["qty"]);
+        prev.TotalQty - parseFloat(prev.TableRows[indexOfRow]["qty"]);
       let TotalAmount =
-        prev.TotalAmount - parseInt(prev.TableRows[indexOfRow]["subtotal"]);
-      let TotalItem = parseInt(prev.TotalItem) - 1;
+        prev.TotalAmount - parseFloat(prev.TableRows[indexOfRow]["subtotal"]);
+      let TotalItem = parseFloat(prev.TotalItem) - 1;
       const TableRows = prev.TableRows.filter(
         (data, index) => index !== indexOfRow
       );
@@ -123,6 +133,7 @@ export default function CreateBreakage(props) {
         TotalAmount: TotalAmount,
         TotalItem: TotalItem,
         TableRows: TableRows,
+        isDataChanged: true,
       };
     });
   };
@@ -133,10 +144,10 @@ export default function CreateBreakage(props) {
       const TableRows = prev.TableRows.map((data, index) => {
         if (index === indexOfRow) {
           data[name] = value;
-          data["subtotal"] = parseInt(data["qty"]) * parseInt(data["rate"]);
+          data["subtotal"] = parseFloat(data["qty"]) * parseFloat(data["rate"]);
         }
-        TotalAmount += parseInt(data["subtotal"]);
-        TotalQty += parseInt(data["qty"]);
+        TotalAmount += parseFloat(data["subtotal"]);
+        TotalQty += parseFloat(data["qty"]);
         return data;
       });
       return {
@@ -144,6 +155,7 @@ export default function CreateBreakage(props) {
         TableRows: TableRows,
         TotalAmount: TotalAmount,
         TotalQty: TotalQty,
+        isDataChanged: true,
       };
     });
   };
@@ -154,10 +166,10 @@ export default function CreateBreakage(props) {
   };
   const handleEnterKeyDown = (e, nextLook) => {
     if (e.which === 13) {
-      var nextFocus = containerRef.current.querySelectorAll(nextLook)[0];
-      while (nextFocus && nextFocus.tabIndex === -1)
-        nextFocus = nextFocus.childNodes[0];
-      nextFocus.focus();
+      var nextFocus = containerRef.current.querySelectorAll(
+        `[data-name="${nextLook}"]`
+      )[0];
+      preOrderHelper(nextFocus).focus();
     }
   };
   const preOrderHelper = useCallback((root) => {
@@ -172,13 +184,29 @@ export default function CreateBreakage(props) {
     }
     return null;
   }, []);
-  const handleNextFocus = (nextElementName) => {
-    const child = containerRef.current.querySelector(
-      `[data-name="${nextElementName}"]`
-    );
-    preOrderHelper(child).focus();
-  };
-
+  const handleCloseConfirmation = useCallback(() => {
+    if (BreakageData.isDataChanged)
+      setBreakageData((prev) => ({
+        ...prev,
+        showConfirmation: true,
+      }));
+    else props.closeModal();
+  }, [props, BreakageData]);
+  const handleEscape = useCallback(
+    (e) => {
+      if (e.which === 27) {
+        handleCloseConfirmation();
+      }
+    },
+    [handleCloseConfirmation]
+  );
+  useEffect(() => {
+    const container = containerRef.current;
+    container.addEventListener("keydown", handleEscape);
+    return () => {
+      container.removeEventListener("keydown", handleEscape);
+    };
+  }, [containerRef, handleEscape]);
   return (
     <div ref={containerRef}>
       <Grid container className={classes.button}>
@@ -192,6 +220,7 @@ export default function CreateBreakage(props) {
         </Grid>
         <Grid item sm={6}>
           <TextField
+            disabled={isDisabled()}
             autoFocus={true}
             name="Date"
             label="Date"
@@ -200,12 +229,11 @@ export default function CreateBreakage(props) {
             onChange={handleBreakageDataChange}
             className={classes.textField}
             onKeyDown={(e) => {
-              if (e.which === 13) {
-                handleNextFocus("title");
-              }
+              handleEnterKeyDown(e, "title");
             }}
           />
           <TextField
+            disabled={isDisabled()}
             className={classes.textField}
             value={BreakageData.Title}
             onChange={handleBreakageDataChange}
@@ -214,7 +242,7 @@ export default function CreateBreakage(props) {
             data-name="title"
             onKeyDown={(e) => {
               if (e.which === 13) {
-                handleNextFocus("tile");
+                handleEnterKeyDown(e, "tile");
               }
             }}
             variant="outlined"
@@ -223,6 +251,7 @@ export default function CreateBreakage(props) {
         </Grid>
         <Grid item sm={2} className={classes.label}>
           <Button
+            disabled={isDisabled()}
             data-name="tile"
             variant="contained"
             size="large"
@@ -255,6 +284,7 @@ export default function CreateBreakage(props) {
                 </TableCell>
                 <TableCell>
                   <TextField
+                    disabled={isDisabled()}
                     type="number"
                     InputProps={{ inputProps: { min: 1 } }}
                     autoFocus={index === 0 ? true : false}
@@ -263,13 +293,14 @@ export default function CreateBreakage(props) {
                     }}
                     onKeyDown={(e) => {
                       handleDeleteKeyDown(e, index);
-                      handleEnterKeyDown(e, "[data-name=rate]");
+                      handleEnterKeyDown(e, "rate");
                     }}
                     value={row.qty}
                   />
                 </TableCell>
                 <TableCell>
                   <TextField
+                    disabled={isDisabled()}
                     data-name="rate"
                     type="number"
                     InputProps={{ inputProps: { min: 1 } }}
@@ -279,7 +310,7 @@ export default function CreateBreakage(props) {
                     }}
                     onKeyDown={(e) => {
                       handleDeleteKeyDown(e, index);
-                      handleEnterKeyDown(e, "[data-name=tile]");
+                      handleEnterKeyDown(e, "tile");
                     }}
                   />
                 </TableCell>
@@ -321,6 +352,7 @@ export default function CreateBreakage(props) {
         </Grid>
         <Grid item sm={4}>
           <TextField
+            disabled={isDisabled()}
             className={classes.textField}
             value={BreakageData.Remarks}
             onChange={handleBreakageDataChange}
@@ -364,7 +396,7 @@ export default function CreateBreakage(props) {
             size="large"
             color="primary"
             className={classes.button}
-            onClick={props.closeModal}
+            onClick={handleCloseConfirmation}
           >
             Close
           </Button>
@@ -378,6 +410,15 @@ export default function CreateBreakage(props) {
           }}
           onTileDataSelect={onTileSelect}
         />
+      ) : null}
+      {BreakageData.showConfirmation ? (
+        <ConfirmationModal
+          showConfirmation={BreakageData.showConfirmation}
+          closeConfirmation={() => {
+            setBreakageData((prev) => ({ ...prev, showConfirmation: false }));
+          }}
+          okBtnCallBack={props.closeModal}
+        ></ConfirmationModal>
       ) : null}
     </div>
   );

@@ -1,4 +1,4 @@
-import React, { useState, useRef } from "react";
+import React, { useState, useRef, useCallback, useEffect } from "react";
 import {
   TextField,
   Grid,
@@ -29,7 +29,7 @@ const useStyles = makeStyles((theme) => ({
   },
 }));
 
-export default function ManageHSN() {
+export default function ManageHSN(props) {
   const classes = useStyles();
   const containerRef = useRef(null);
   useEnterNavigation(containerRef);
@@ -59,6 +59,21 @@ export default function ManageHSN() {
       HSN: "",
     }));
   };
+  const handleEscape = useCallback(
+    (e) => {
+      if (e.which === 27) {
+        props.closeModal();
+      }
+    },
+    [props]
+  );
+  useEffect(() => {
+    const container = containerRef.current;
+    container.addEventListener("keydown", handleEscape);
+    return () => {
+      container.removeEventListener("keydown", handleEscape);
+    };
+  }, [containerRef, handleEscape]);
   return (
     <div ref={containerRef}>
       <Grid container className={classes.button}>
@@ -110,7 +125,7 @@ export default function ManageHSN() {
           title: "",
           tableBodyHeight: "500px",
           data: HSNData.TableData,
-          autoFocus:false,
+          autoFocus: false,
         }}
       ></CustomTable>
     </div>

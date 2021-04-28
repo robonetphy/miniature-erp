@@ -1,4 +1,4 @@
-import React, { useState, useRef, useCallback } from "react";
+import React, { useState, useRef, useCallback, useEffect } from "react";
 import {
   TextField,
   Grid,
@@ -9,6 +9,7 @@ import {
 import { CompanyTable } from "../customTables";
 import Autocomplete from "@material-ui/lab/Autocomplete";
 import useEnterNavigation from "../../hooks/useEnterNavigation";
+import ConfirmationModal from "../confirmationModal";
 const useStyles = makeStyles((theme) => ({
   textField: {
     margin: "1% 2%",
@@ -43,6 +44,8 @@ export default function CreateStock(props) {
     Company: props.Company ?? "",
     initialQty: props.initialQty ?? 0,
     showCompanyTable: false,
+    showConfirmation: false,
+    isDataChanged: false,
   });
 
   const save = () => {
@@ -59,6 +62,8 @@ export default function CreateStock(props) {
       Company: "",
       initialQty: 0,
       showCompanyTable: false,
+      showConfirmation: false,
+      isDataChanged: false,
     });
   };
   const onCompanySelect = (data) => {
@@ -68,6 +73,7 @@ export default function CreateStock(props) {
         ...prev,
         Company: Company,
         showCompanyTable: false,
+        isDataChanged: true,
       };
     });
     handleNextFocus("name");
@@ -85,10 +91,14 @@ export default function CreateStock(props) {
     setStockData((prev) => ({
       ...prev,
       [event.target.name]: newValue ?? event.target.value,
+      isDataChanged: true,
     }));
   };
   const containerRef = useRef(null);
   useEnterNavigation(containerRef);
+  const isDisabled = () => {
+    return props.mode === "Delete";
+  };
   const preOrderHelper = useCallback((root) => {
     if (root !== null) {
       if (root.tabIndex !== -1) return root;
@@ -107,6 +117,29 @@ export default function CreateStock(props) {
     );
     preOrderHelper(child).focus();
   };
+  const handleCloseConfirmation = useCallback(() => {
+    if (StockData.isDataChanged)
+      setStockData((prev) => ({
+        ...prev,
+        showConfirmation: true,
+      }));
+    else props.closeModal();
+  }, [props, StockData]);
+  const handleEscape = useCallback(
+    (e) => {
+      if (e.which === 27) {
+        handleCloseConfirmation();
+      }
+    },
+    [handleCloseConfirmation]
+  );
+  useEffect(() => {
+    const container = containerRef.current;
+    container.addEventListener("keydown", handleEscape);
+    return () => {
+      container.removeEventListener("keydown", handleEscape);
+    };
+  }, [containerRef, handleEscape]);
   return (
     <div ref={containerRef}>
       <Grid container spacing={3} className={classes.container}>
@@ -139,6 +172,7 @@ export default function CreateStock(props) {
             value={StockData.Company}
           />
           <Button
+            disabled={isDisabled()}
             autoFocus={true}
             variant="contained"
             size="large"
@@ -152,6 +186,7 @@ export default function CreateStock(props) {
             Select Company
           </Button>
           <TextField
+            disabled={isDisabled()}
             className={classes.textField}
             label="Tile's Name"
             variant="outlined"
@@ -164,6 +199,7 @@ export default function CreateStock(props) {
           />
           <Autocomplete
             options={["N/A", "123x123", "122x122", "646x54"]}
+            disabled={isDisabled()}
             value={StockData.Size}
             onChange={(e, newValue) => {
               setStockData((prev) => ({ ...prev, Size: newValue }));
@@ -190,6 +226,7 @@ export default function CreateStock(props) {
           />
           <Autocomplete
             options={["N/A", "ABC", "ABCX", "XCY"]}
+            disabled={isDisabled()}
             value={StockData.Type}
             onChange={(e, newValue) => {
               setStockData((prev) => ({ ...prev, Type: newValue }));
@@ -216,6 +253,7 @@ export default function CreateStock(props) {
           />
           <TextField
             type="number"
+            disabled={isDisabled()}
             value={StockData.Rate}
             name="Rate"
             onChange={handleStockDataChange}
@@ -227,6 +265,7 @@ export default function CreateStock(props) {
           />
           <Autocomplete
             options={["N/A", "12%", "11%", "10%"]}
+            disabled={isDisabled()}
             value={StockData.HSN}
             onChange={(e, newValue) => {
               setStockData((prev) => ({ ...prev, HSN: newValue }));
@@ -278,9 +317,7 @@ export default function CreateStock(props) {
             size="large"
             color="primary"
             className={classes.button}
-            onClick={() => {
-              props.closeModal();
-            }}
+            onClick={handleCloseConfirmation}
           >
             Close
           </Button>
@@ -294,6 +331,15 @@ export default function CreateStock(props) {
           }}
           onCompanyDataSelect={onCompanySelect}
         />
+      ) : null}
+      {StockData.showConfirmation ? (
+        <ConfirmationModal
+          showConfirmation={StockData.showConfirmation}
+          closeConfirmation={() => {
+            setStockData((prev) => ({ ...prev, showConfirmation: false }));
+          }}
+          okBtnCallBack={props.closeModal}
+        ></ConfirmationModal>
       ) : null}
     </div>
   );

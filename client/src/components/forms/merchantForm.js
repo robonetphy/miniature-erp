@@ -1,4 +1,4 @@
-import React, { useState, useRef } from "react";
+import React, { useState, useRef, useCallback, useEffect } from "react";
 import {
   TextField,
   Grid,
@@ -8,6 +8,7 @@ import {
 } from "@material-ui/core";
 import Autocomplete from "@material-ui/lab/Autocomplete";
 import useEnterNavigation from "../../hooks/useEnterNavigation";
+import ConfirmationModal from "../confirmationModal";
 const useStyles = makeStyles((theme) => ({
   textField: {
     margin: "1% 2%",
@@ -71,6 +72,9 @@ const IndianState = [
 ];
 export default function AddMerchant(props) {
   const classes = useStyles();
+  const isDisabled = () => {
+    return props.mode === "Delete";
+  };
   const [MerchantData, setMerchantData] = useState({
     Name: props.Name ?? "",
     Address: props.Address ?? "",
@@ -80,6 +84,8 @@ export default function AddMerchant(props) {
     PANNo: props.PANNo ?? "",
     State: props.State ?? { code: "N/A", title: "None" },
     GSTIN: props.GSTIN ?? "",
+    showConfirmation: false,
+    isDataChanged: false,
   });
 
   const save = () => {
@@ -96,6 +102,8 @@ export default function AddMerchant(props) {
       PANNo: "",
       State: { code: "N/A", title: "None" },
       GSTIN: "",
+      showConfirmation: false,
+      isDataChanged: false,
     });
   };
   const saveAndClose = (e) => {
@@ -111,177 +119,221 @@ export default function AddMerchant(props) {
     setMerchantData((prev) => ({
       ...prev,
       [event.target.name]: newValue ?? event.target.value,
+      isDataChanged: true,
     }));
   };
   const containerRef = useRef(null);
   useEnterNavigation(containerRef);
+
+  const handleCloseConfirmation = useCallback(() => {
+    if (MerchantData.isDataChanged)
+      setMerchantData((prev) => ({
+        ...prev,
+        showConfirmation: true,
+      }));
+    else props.closeModal();
+  }, [props, MerchantData]);
+  const handleEscape = useCallback(
+    (e) => {
+      if (e.which === 27) {
+        handleCloseConfirmation();
+      }
+    },
+    [handleCloseConfirmation]
+  );
+  useEffect(() => {
+    const container = containerRef.current;
+    container.addEventListener("keydown", handleEscape);
+    return () => {
+      container.removeEventListener("keydown", handleEscape);
+    };
+  }, [containerRef, handleEscape]);
   return (
-    <Grid
-      ref={containerRef}
-      container
-      spacing={3}
-      className={classes.container}
-    >
-      <Grid item sm={3}>
-        <Typography gutterBottom className={classes.label}>
-          Name
-        </Typography>
-        <Typography gutterBottom className={classes.label}>
-          Address
-        </Typography>
-        <Typography gutterBottom className={classes.label}>
-          Phone No 1
-        </Typography>
-        <Typography gutterBottom className={classes.label}>
-          Phone No 2
-        </Typography>
-        <Typography gutterBottom className={classes.label}>
-          Email
-        </Typography>
-        <Typography gutterBottom className={classes.label}>
-          PAN No
-        </Typography>
-        <Typography gutterBottom className={classes.label}>
-          State
-        </Typography>
-        <Typography gutterBottom className={classes.label}>
-          GSTIN
-        </Typography>
-      </Grid>
-      <Grid item sm={8}>
-        <TextField
-          autoFocus={true}
-          data-navigation="true"
-          className={classes.textField}
-          label="Name"
-          onChange={handleMerchantDataChange}
-          name="Name"
-          value={MerchantData.Name}
-          variant="outlined"
-          fullWidth={true}
-        />
-        <TextField
-          data-navigation="true"
-          className={classes.textField}
-          label="Address"
-          onChange={handleMerchantDataChange}
-          name="Address"
-          value={MerchantData.Address}
-          variant="outlined"
-          fullWidth={true}
-        />
-        <TextField
-          data-navigation="true"
-          className={classes.textField}
-          label="Phone No 1"
-          variant="outlined"
-          onChange={handleMerchantDataChange}
-          name="PhoneNo1"
-          value={MerchantData.PhoneNo1}
-          fullWidth={true}
-        />
-        <TextField
-          data-navigation="true"
-          className={classes.textField}
-          label="Phone No 2"
-          onChange={handleMerchantDataChange}
-          name="PhoneNo2"
-          value={MerchantData.PhoneNo2}
-          variant="outlined"
-          fullWidth={true}
-        />
-        <TextField
-          data-navigation="true"
-          className={classes.textField}
-          label="Email"
-          onChange={handleMerchantDataChange}
-          name="Email"
-          value={MerchantData.Email}
-          variant="outlined"
-          fullWidth={true}
-        />
-        <TextField
-          data-navigation="true"
-          className={classes.textField}
-          label="PAN No"
-          onChange={handleMerchantDataChange}
-          name="PANNo"
-          value={MerchantData.PANNo}
-          variant="outlined"
-          fullWidth={true}
-        />
-        <Autocomplete
-          options={IndianState}
-          getOptionLabel={(option) => option.title}
-          getOptionSelected={(option) =>
-            option.code === MerchantData.State.code
-          }
-          value={MerchantData.State}
-          onChange={(e, newValue) => {
-            setMerchantData((prev) => ({ ...prev, State: newValue }));
-          }}
-          className={classes.textField}
-          fullWidth={true}
-          autoHighlight={true}
-          autoSelect={true}
-          clearOnBlur={true}
-          blurOnSelect={true}
-          autoComplete={true}
-          openOnFocus={true}
-          disablePortal={true}
-          disableListWrap={true}
-          clearOnEscape={true}
-          renderInput={(params) => (
-            <TextField
-              data-navigation="true"
-              {...params}
-              label="state"
-              variant="outlined"
-            />
-          )}
-        />
-        <TextField
-          data-navigation="true"
-          className={classes.textField}
-          label="GSTIN"
-          onChange={handleMerchantDataChange}
-          name="GSTIN"
-          value={MerchantData.GSTIN}
-          variant="outlined"
-          fullWidth={true}
-        />
-      </Grid>
-      <Grid item sm={12} style={{ textAlignLast: "right" }}>
-        {props.mode === undefined ? (
+    <>
+      <Grid
+        ref={containerRef}
+        container
+        spacing={3}
+        className={classes.container}
+      >
+        <Grid item sm={3}>
+          <Typography gutterBottom className={classes.label}>
+            Name
+          </Typography>
+          <Typography gutterBottom className={classes.label}>
+            Address
+          </Typography>
+          <Typography gutterBottom className={classes.label}>
+            Phone No 1
+          </Typography>
+          <Typography gutterBottom className={classes.label}>
+            Phone No 2
+          </Typography>
+          <Typography gutterBottom className={classes.label}>
+            Email
+          </Typography>
+          <Typography gutterBottom className={classes.label}>
+            PAN No
+          </Typography>
+          <Typography gutterBottom className={classes.label}>
+            State
+          </Typography>
+          <Typography gutterBottom className={classes.label}>
+            GSTIN
+          </Typography>
+        </Grid>
+        <Grid item sm={8}>
+          <TextField
+            autoFocus={true}
+            disabled={isDisabled()}
+            data-navigation="true"
+            className={classes.textField}
+            label="Name"
+            onChange={handleMerchantDataChange}
+            name="Name"
+            value={MerchantData.Name}
+            variant="outlined"
+            fullWidth={true}
+          />
+          <TextField
+            data-navigation="true"
+            disabled={isDisabled()}
+            className={classes.textField}
+            label="Address"
+            onChange={handleMerchantDataChange}
+            name="Address"
+            value={MerchantData.Address}
+            variant="outlined"
+            fullWidth={true}
+          />
+          <TextField
+            disabled={isDisabled()}
+            data-navigation="true"
+            className={classes.textField}
+            label="Phone No 1"
+            variant="outlined"
+            onChange={handleMerchantDataChange}
+            name="PhoneNo1"
+            value={MerchantData.PhoneNo1}
+            fullWidth={true}
+          />
+          <TextField
+            disabled={isDisabled()}
+            data-navigation="true"
+            className={classes.textField}
+            label="Phone No 2"
+            onChange={handleMerchantDataChange}
+            name="PhoneNo2"
+            value={MerchantData.PhoneNo2}
+            variant="outlined"
+            fullWidth={true}
+          />
+          <TextField
+            disabled={isDisabled()}
+            data-navigation="true"
+            className={classes.textField}
+            label="Email"
+            onChange={handleMerchantDataChange}
+            name="Email"
+            value={MerchantData.Email}
+            variant="outlined"
+            fullWidth={true}
+          />
+          <TextField
+            disabled={isDisabled()}
+            data-navigation="true"
+            className={classes.textField}
+            label="PAN No"
+            onChange={handleMerchantDataChange}
+            name="PANNo"
+            value={MerchantData.PANNo}
+            variant="outlined"
+            fullWidth={true}
+          />
+          <Autocomplete
+            disabled={isDisabled()}
+            options={IndianState}
+            getOptionLabel={(option) => option.title}
+            getOptionSelected={(option) =>
+              option.code === MerchantData.State.code
+            }
+            value={MerchantData.State}
+            onChange={(e, newValue) => {
+              setMerchantData((prev) => ({ ...prev, State: newValue }));
+            }}
+            className={classes.textField}
+            fullWidth={true}
+            autoHighlight={true}
+            autoSelect={true}
+            clearOnBlur={true}
+            blurOnSelect={true}
+            autoComplete={true}
+            openOnFocus={true}
+            disablePortal={true}
+            disableListWrap={true}
+            clearOnEscape={true}
+            renderInput={(params) => (
+              <TextField
+                data-navigation="true"
+                {...params}
+                label="state"
+                variant="outlined"
+              />
+            )}
+          />
+          <TextField
+            disabled={isDisabled()}
+            data-navigation="true"
+            className={classes.textField}
+            label="GSTIN"
+            onChange={handleMerchantDataChange}
+            name="GSTIN"
+            value={MerchantData.GSTIN}
+            variant="outlined"
+            fullWidth={true}
+          />
+        </Grid>
+        <Grid item sm={12} style={{ textAlignLast: "right" }}>
+          {props.mode === undefined ? (
+            <Button
+              variant="contained"
+              size="large"
+              color="primary"
+              className={classes.button}
+              onClick={saveAndAgain}
+            >
+              Save &#38; Again
+            </Button>
+          ) : null}
           <Button
             variant="contained"
             size="large"
             color="primary"
             className={classes.button}
-            onClick={saveAndAgain}
+            onClick={saveAndClose}
           >
-            Save &#38; Again
+            {props.mode ?? "Save"}&#38; Close
           </Button>
-        ) : null}
-        <Button
-          variant="contained"
-          size="large"
-          color="primary"
-          className={classes.button}
-          onClick={saveAndClose}
-        >
-          {props.mode ?? "Save"}&#38; Close
-        </Button>
-        <Button
-          variant="contained"
-          size="large"
-          color="primary"
-          className={classes.button}
-          onClick={props.closeModal}
-        >
-          Close
-        </Button>
+          <Button
+            variant="contained"
+            size="large"
+            color="primary"
+            className={classes.button}
+            onClick={handleCloseConfirmation}
+          >
+            Close
+          </Button>
+        </Grid>
       </Grid>
-    </Grid>
+      {MerchantData.showConfirmation ? (
+        <ConfirmationModal
+          showConfirmation={MerchantData.showConfirmation}
+          closeConfirmation={() => {
+            setMerchantData((prev) => ({ ...prev, showConfirmation: false }));
+          }}
+          okBtnCallBack={props.closeModal}
+        ></ConfirmationModal>
+      ) : null}
+    </>
   );
 }

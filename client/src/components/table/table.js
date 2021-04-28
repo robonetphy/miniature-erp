@@ -135,9 +135,11 @@ const CustomTable = forwardRef((props, ref) => {
         }));
       }
       if (e.which === 13) {
+        e.preventDefault();
         editCallback(currentIndex);
       }
       if (e.which === 46) {
+        e.preventDefault();
         deleteCallback(currentIndex);
       }
     },

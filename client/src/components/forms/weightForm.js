@@ -1,4 +1,4 @@
-import React, { useState, useRef, useCallback } from "react";
+import React, { useState, useRef, useCallback,useEffect } from "react";
 import {
   TextField,
   Grid,
@@ -40,7 +40,7 @@ const useStyles = makeStyles((theme) => ({
     width: "50%",
   },
 }));
-export default function ManageWeight() {
+export default function ManageWeight(props) {
   const classes = useStyles();
   const containerRef = useRef(null);
   const [WeightData, setWeightData] = useState({
@@ -135,6 +135,21 @@ export default function ManageWeight() {
     );
     preOrderHelper(child).focus();
   };
+  const handleEscape = useCallback(
+    (e) => {
+      if (e.which === 27) {
+        props.closeModal();
+      }
+    },
+    [props]
+  );
+  useEffect(() => {
+    const container = containerRef.current;
+    container.addEventListener("keydown", handleEscape);
+    return () => {
+      container.removeEventListener("keydown", handleEscape);
+    };
+  }, [containerRef, handleEscape]);
   return (
     <div ref={containerRef}>
       <Grid container className={classes.button} spacing={3}>
