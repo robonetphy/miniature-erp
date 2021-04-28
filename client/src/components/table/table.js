@@ -54,7 +54,8 @@ const CustomTable = forwardRef((props, ref) => {
     searchText: props.searchText ?? "",
     page: 0,
     rowsPerPage: 10,
-    selectedID: props.data.length ? props.data[0].key : null,
+    selectedID:
+      props.selectedID ?? props.data.length ? props.data[0].key : null,
   });
   const handleChangePage = (event, newPage) => {
     setTableDataManager((prev) => ({ ...prev, page: newPage }));
@@ -84,16 +85,24 @@ const CustomTable = forwardRef((props, ref) => {
         if (element.getAttribute("data-selected") === "true")
           currentIndex = index;
       });
-      return props.data[currentIndex];
+      return {
+        ...props.data[currentIndex],
+        searchText: TableDataManager.searchText,
+      };
     },
   }));
   const editCallback = useCallback(
     (currentIndex) => {
       if (typeof props.editCallback === "function") {
-        props.editCallback(props.data[currentIndex]);
+        props.editCallback({
+          ...props.data[currentIndex],
+          searchText: TableDataManager.searchText,//so that stockTable Callback get this data
+                                                  //and store same in form
+                                                  //next time open stocktable with those store
+        });
       }
     },
-    [props]
+    [props, TableDataManager]
   );
   const deleteCallback = useCallback(
     (currentIndex) => {
