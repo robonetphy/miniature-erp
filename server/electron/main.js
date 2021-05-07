@@ -1,17 +1,13 @@
 const { app, BrowserWindow, ipcMain } = require("electron");
 const path = require("path");
 const url = require("url");
-const express = require("express");
-const server = express();
-const port = 8080;
-var cors = require("cors");
-
-var knex = require("knex")({
-  client: "sqlite3",
-  connection: {
-    filename: path.join(__dirname, "../db/database.sqlite"),
-  },
-});
+require("../dist/index.js");
+// var knex = require("knex")({
+//   client: "sqlite3",
+//   connection: {
+//     filename: path.join(__dirname, "../db/database.sqlite"),
+//   },
+// });
 
 // Keep a global reference of the window object, if you don't, the window will
 // be closed automatically when the JavaScript object is garbage collected.
@@ -29,8 +25,7 @@ function createWindow() {
   });
 
   // Load index.html into the new BrowserWindow
-  mainWindow.loadFile("src/index.html");
-
+  mainWindow.loadFile(path.join(__dirname, "../public/index.html"));
   // Open DevTools - Remove for PRODUCTION!
   // mainWindow.webContents.openDevTools();
 
@@ -55,18 +50,4 @@ app.on("activate", () => {
 
 app.on("window-all-closed", () => {
   app.quit();
-});
-
-server.use(cors());
-server.get("/", (req, res) => {
-  res.send("Hello World!");
-});
-server.get("/data", (req, res) => {
-  let result = knex.select("Name").from("User");
-  result.then(function (rows) {
-    res.send(rows);
-  });
-});
-server.listen(port, () => {
-  console.log(`Example app listening at http://localhost:${port}`);
 });
