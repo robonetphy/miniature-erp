@@ -578,7 +578,7 @@ export default function Layout() {
         <AppBar position="fixed" className={classes.appBar}>
           <Toolbar>
             <Typography variant="h6" noWrap>
-              Z-THETA
+              NAVIN TEXTILE
             </Typography>
           </Toolbar>
         </AppBar>

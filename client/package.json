@@ -25,7 +25,7 @@
     "web-vitals": "^1.1.1"
   },
   "scripts": {
-    "start": "react-scripts start",
+    "start": "concurrently \"npm run start-react\" \"npm run start-electron\"",
     "start-react": "set BROWSER=none && react-scripts start",
     "start-electron": "set ELECTRON_START_URL=http://localhost:3000 && electron .",
     "build": "react-scripts build",
