@@ -1,22 +1,14 @@
-import React, { useState, useRef } from "react";
+import React, { useState, useRef, useCallback, useEffect } from "react";
 import {
   TextField,
   Grid,
   Button,
   Typography,
   makeStyles,
-  Select,
-  MenuItem,
 } from "@material-ui/core";
+import Autocomplete from "@material-ui/lab/Autocomplete";
+import { StockTable, CompanyTable } from "../customTables";
 import CustomTable from "../table";
-import CustomModal from "../modal";
-const dataGenerator = (data, length) => {
-  var dummy = [];
-  for (var i = 0; i < length; i++) {
-    dummy.push(data);
-  }
-  return dummy;
-};
 const useStyles = makeStyles((theme) => ({
   textField: {
     margin: "1% 2%",
@@ -43,12 +35,12 @@ const useStyles = makeStyles((theme) => ({
     width: "50%",
   },
 }));
-export default function ChangeRate() {
+export default function ChangeRate(props) {
   const classes = useStyles();
   const containerRef = useRef(null);
   const [RateData, setRateData] = useState({
-    Size: "",
-    Type: "",
+    Size: "N/A",
+    Type: "N/A",
     Company: "ALL",
     Product: "ALL",
     Rate: 0,
@@ -59,8 +51,8 @@ export default function ChangeRate() {
   const cleanForm = () => {
     setRateData((prev) => ({
       ...prev,
-      Size: "",
-      Type: "",
+      Size: "N/A",
+      Type: "N/A",
       Company: "ALL",
       Product: "ALL",
       Rate: 0,
@@ -68,25 +60,27 @@ export default function ChangeRate() {
       showCompanyTable: false,
     }));
   };
-  const handleRateDataChange = (event) => {
+  const handleRateDataChange = (event, newValue) => {
     setRateData((prev) => ({
       ...prev,
-      [event.target.name]: event.target.value,
+      [event.target.name]: newValue ?? event.target.value,
     }));
   };
   const onTileSelect = (data) => {
     if (data)
       setRateData((prev) => {
-        const [Product] = data;
+        const { name: Product } = data;
         return { ...prev, Product: Product, showStockTable: false };
       });
+    handleNextFocus("filter");
   };
   const onCompanySelect = (data) => {
     if (data)
       setRateData((prev) => {
-        const [Company] = data;
+        const { company: Company } = data;
         return { ...prev, Company: Company, showCompanyTable: false };
       });
+    handleNextFocus("product");
   };
   const save = () => {
     console.log(RateData);
@@ -94,7 +88,39 @@ export default function ChangeRate() {
   const fetchTableData = () => {
     console.log("Fetch Table Data");
   };
-
+  const preOrderHelper = useCallback((root) => {
+    if (root !== null) {
+      if (root.tabIndex !== -1) return root;
+      var nodes = root.childNodes;
+      var isFound = null;
+      for (var i = 0; i < nodes.length; i++) {
+        isFound = preOrderHelper(nodes[i]);
+        if (isFound instanceof Element) return isFound;
+      }
+    }
+    return null;
+  }, []);
+  const handleNextFocus = (nextElementName) => {
+    const child = containerRef.current.querySelector(
+      `[data-name="${nextElementName}"]`
+    );
+    preOrderHelper(child).focus();
+  };
+  const handleEscape = useCallback(
+    (e) => {
+      if (e.which === 27) {
+        props.closeModal();
+      }
+    },
+    [props]
+  );
+  useEffect(() => {
+    const container = containerRef.current;
+    container.addEventListener("keydown", handleEscape);
+    return () => {
+      container.removeEventListener("keydown", handleEscape);
+    };
+  }, [containerRef, handleEscape]);
   return (
     <div ref={containerRef}>
       <Grid container className={classes.button} spacing={3}>
@@ -113,41 +139,74 @@ export default function ChangeRate() {
           </Typography>
         </Grid>
         <Grid item sm={3}>
-          <Select
+          <Autocomplete
+            options={["N/A", "123x123", "11x12", "15x15"]}
             value={RateData.Size}
-            onChange={handleRateDataChange}
-            name="Size"
+            onChange={(e, newValue) => {
+              setRateData((prev) => ({ ...prev, Size: newValue }));
+            }}
             className={classes.textField}
-            variant="outlined"
             fullWidth={true}
-          >
-            <MenuItem value="">
-              <em>None</em>
-            </MenuItem>
-            <MenuItem value={10}>Size A</MenuItem>
-            <MenuItem value={20}>Size A</MenuItem>
-            <MenuItem value={30}>Size A</MenuItem>
-          </Select>
-          <Select
+            autoHighlight={true}
+            autoSelect={true}
+            clearOnBlur={true}
+            blurOnSelect={true}
+            autoComplete={true}
+            openOnFocus={true}
+            disablePortal={true}
+            disableListWrap={true}
+            clearOnEscape={true}
+            renderInput={(params) => (
+              <TextField
+                autoFocus={true}
+                onKeyDown={(e) => {
+                  if (e.which === 13) {
+                    handleNextFocus("type");
+                  }
+                }}
+                {...params}
+                label="Size"
+                variant="outlined"
+              />
+            )}
+          />
+          <Autocomplete
+            options={["N/A", "ABC", "ABXC", "ABCS"]}
             value={RateData.Type}
-            onChange={handleRateDataChange}
-            name="Type"
+            onChange={(e, newValue) => {
+              setRateData((prev) => ({ ...prev, Type: newValue }));
+            }}
             className={classes.textField}
-            variant="outlined"
             fullWidth={true}
-          >
-            <MenuItem value="">
-              <em>None</em>
-            </MenuItem>
-            <MenuItem value={10}>10</MenuItem>
-            <MenuItem value={20}>20</MenuItem>
-            <MenuItem value={30}>30</MenuItem>
-          </Select>
+            autoHighlight={true}
+            autoSelect={true}
+            clearOnBlur={true}
+            blurOnSelect={true}
+            autoComplete={true}
+            openOnFocus={true}
+            disablePortal={true}
+            disableListWrap={true}
+            clearOnEscape={true}
+            renderInput={(params) => (
+              <TextField
+                onKeyDown={(e) => {
+                  if (e.which === 13) {
+                    handleNextFocus("company");
+                  }
+                }}
+                data-name="type"
+                {...params}
+                label="Type"
+                variant="outlined"
+              />
+            )}
+          />
           <span className={classes.SelectedItems}>{RateData.Company}</span>
           <Button
             variant="contained"
             size="large"
             color="primary"
+            data-name="company"
             className={classes.Typebutton}
             onClick={() => {
               containerRef.current.querySelector(":focus").blur();
@@ -161,6 +220,7 @@ export default function ChangeRate() {
             variant="contained"
             size="large"
             color="primary"
+            data-name="product"
             className={classes.Typebutton}
             onClick={() => {
               containerRef.current.querySelector(":focus").blur();
@@ -183,6 +243,12 @@ export default function ChangeRate() {
             variant="contained"
             size="large"
             color="primary"
+            data-name="filter"
+            onKeyDown={(e) => {
+              if (e.which === 13) {
+                handleNextFocus("rate");
+              }
+            }}
             className={classes.Typebutton}
             onClick={fetchTableData}
           >
@@ -201,6 +267,12 @@ export default function ChangeRate() {
             value={RateData.Rate}
             onChange={handleRateDataChange}
             name="Rate"
+            data-name="rate"
+            onKeyDown={(e) => {
+              if (e.which === 13) {
+                handleNextFocus("changerate");
+              }
+            }}
             type="number"
             className={classes.textField}
             label="Rate"
@@ -210,13 +282,19 @@ export default function ChangeRate() {
       </Grid>
       <CustomTable
         {...{
-          isSearchEnable: true,
           title: "",
-          selectableRows: "none",
-          fixedHeader: true,
           tableBodyHeight: "230px",
-          columns: ["Name", "Size", "Company", "Qty", "Type", "Rate", "Amount"],
+          columns: [
+            { title: "Name", id: "name" },
+            { title: "Size", id: "size" },
+            { title: "Company", id: "company" },
+            { title: "Qty", id: "qty" },
+            { title: "Type", id: "type" },
+            { title: "Rate", id: "rate" },
+            { title: "HSN", id: "hsn" },
+          ],
           data: RateData.TableData,
+          autoFocus: false,
         }}
       ></CustomTable>
       <Grid container className={classes.button}>
@@ -224,6 +302,7 @@ export default function ChangeRate() {
           data-navigation="true"
           variant="contained"
           size="large"
+          data-name="changerate"
           color="primary"
           onClick={save}
         >
@@ -231,71 +310,23 @@ export default function ChangeRate() {
         </Button>
       </Grid>
       {RateData.showStockTable ? (
-        <CustomModal
-          showModal={RateData.showStockTable}
+        <StockTable
+          showStockTable={RateData.showStockTable}
           closeModal={() => {
             setRateData((prev) => ({ ...prev, showStockTable: false }));
           }}
-          modalTitle="Stock Table"
-          ModalType={(props) => (
-            <CustomTable
-              {...{
-                columns: [
-                  "Name",
-                  "Size",
-                  "Company",
-                  "Qty",
-                  "Type",
-                  "Rate",
-                  "HNS",
-                ],
-                data: [
-                  ...dataGenerator(
-                    ["T1", "18x12", "ABC", 1000, "abs", 200, "12%"],
-                    105
-                  ),
-                ],
-                title: "Inventory",
-                isSearchEnable: true,
-                fixedHeader: true,
-                tableBodyHeight: "450px",
-                editCallback: onTileSelect,
-              }}
-            />
-          )}
-          modalWidth="60vw"
-          modalHeight="70vh"
-        ></CustomModal>
+          onTileDataSelect={onTileSelect}
+        />
       ) : null}
 
       {RateData.showCompanyTable ? (
-        <CustomModal
-          showModal={RateData.showCompanyTable}
+        <CompanyTable
+          showCompanyTable={RateData.showCompanyTable}
           closeModal={() => {
             setRateData((prev) => ({ ...prev, showCompanyTable: false }));
           }}
-          modalTitle="Company Table"
-          ModalType={(props) => (
-            <CustomTable
-              {...{
-                columns: ["Company", "Address", "Phone No1"],
-                data: [
-                  ...dataGenerator(
-                    ["ABC", "asdasfasddasdas", "+912123123123"],
-                    56
-                  ),
-                ],
-                title: "Company",
-                isSearchEnable: true,
-                fixedHeader: true,
-                tableBodyHeight: "450px",
-                editCallback: onCompanySelect,
-              }}
-            />
-          )}
-          modalWidth="60vw"
-          modalHeight="70vh"
-        ></CustomModal>
+          onCompanyDataSelect={onCompanySelect}
+        />
       ) : null}
     </div>
   );

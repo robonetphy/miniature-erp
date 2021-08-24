@@ -1,4 +1,4 @@
-import React, { useState, useRef } from "react";
+import React, { useState, useRef, useCallback, useEffect } from "react";
 import {
   TextField,
   Grid,
@@ -6,6 +6,7 @@ import {
   Typography,
   makeStyles,
 } from "@material-ui/core";
+import { v4 as uuidv4 } from "uuid";
 import CustomTable from "../table";
 import useEnterNavigation from "../../hooks/useEnterNavigation";
 const useStyles = makeStyles((theme) => ({
@@ -28,7 +29,7 @@ const useStyles = makeStyles((theme) => ({
   },
 }));
 
-export default function ManageHSN() {
+export default function ManageHSN(props) {
   const classes = useStyles();
   const containerRef = useRef(null);
   useEnterNavigation(containerRef);
@@ -50,11 +51,29 @@ export default function ManageHSN() {
     save();
     setHSNData((prev) => ({
       ...prev,
-      TableData: [[prev.HSNCode, prev.HSN], ...prev.TableData],
+      TableData: [
+        { hsncode: prev.HSNCode, hsn: prev.HSN, key: uuidv4() },
+        ...prev.TableData,
+      ],
       HSNCode: "",
       HSN: "",
     }));
   };
+  const handleEscape = useCallback(
+    (e) => {
+      if (e.which === 27) {
+        props.closeModal();
+      }
+    },
+    [props]
+  );
+  useEffect(() => {
+    const container = containerRef.current;
+    container.addEventListener("keydown", handleEscape);
+    return () => {
+      container.removeEventListener("keydown", handleEscape);
+    };
+  }, [containerRef, handleEscape]);
   return (
     <div ref={containerRef}>
       <Grid container className={classes.button}>
@@ -99,13 +118,14 @@ export default function ManageHSN() {
       </Grid>
       <CustomTable
         {...{
-          columns: ["HSN Code", "HSN %"],
-          isSearchEnable: true,
+          columns: [
+            { title: "HSN Code", id: "hsncode" },
+            { title: "HSN %", id: "hsn" },
+          ],
           title: "",
-          fixedHeader: true,
           tableBodyHeight: "500px",
-          selectableRows: "none",
           data: HSNData.TableData,
+          autoFocus: false,
         }}
       ></CustomTable>
     </div>

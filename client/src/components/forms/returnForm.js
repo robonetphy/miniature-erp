@@ -1,4 +1,4 @@
-import React, { useState, useRef } from "react";
+import React, { useState, useRef, useCallback, useEffect } from "react";
 import {
   TextField,
   Grid,
@@ -13,16 +13,9 @@ import {
   Typography,
   makeStyles,
 } from "@material-ui/core";
-import CustomModal from "../modal";
-import CustomTable from "../table";
 import { v4 as uuidv4 } from "uuid";
-const dataGenerator = (data, length) => {
-  var dummy = [];
-  for (var i = 0; i < length; i++) {
-    dummy.push(data);
-  }
-  return dummy;
-};
+import { StockTable, MerchantTable } from "../customTables";
+import ConfirmationModal from "../confirmationModal";
 const useStyles = makeStyles((theme) => ({
   textField: {
     margin: "1% 2%",
@@ -51,6 +44,9 @@ const useStyles = makeStyles((theme) => ({
 export default function CreateReturn(props) {
   const classes = useStyles();
   const containerRef = useRef(null);
+  const isDisabled = () => {
+    return props.mode === "Delete";
+  };
   // useEnterNavigation(containerRef);
   const [ReturnData, setReturnData] = useState({
     Remarks: props.Remarks ?? "",
@@ -66,6 +62,8 @@ export default function CreateReturn(props) {
     LastReturn: props.LastReturn ?? "R-1",
     showMerchantTable: false,
     showStockTable: false,
+    showConfirmation: false,
+    isDataChanged: false,
   });
   const save = () => {
     //Send Data to Server
@@ -86,28 +84,44 @@ export default function CreateReturn(props) {
       PhoneNo1: "",
       PhoneNo2: "",
       LastReturn: "R-1",
+      showConfirmation: false,
+      isDataChanged: false,
     });
   };
   const onMerchantSelect = (data) => {
     if (data)
       setReturnData((prev) => {
-        const [Merchant, Address, PhoneNo1, PhoneNo2] = data;
+        const {
+          name: Merchant,
+          address: Address,
+          phone1: PhoneNo1,
+          phone2: PhoneNo2,
+        } = data;
         return {
           ...prev,
           MerchantName: Merchant,
           Address: Address,
           PhoneNo1: PhoneNo1,
           PhoneNo2: PhoneNo2,
+          isDataChanged: true,
           showMerchantTable: false,
         };
       });
+    handleNextFocus("date");
   };
   const onTileSelect = (data) => {
     if (data)
       setReturnData((prev) => {
-        const [Product, Size, Company, Qty, Type, Rate] = data;
-        let TotalQty = prev.TotalQty + parseInt(Qty);
-        let TotalAmount = prev.TotalAmount + parseInt(Qty) * parseInt(Rate);
+        const {
+          name: Product,
+          size: Size,
+          company: Company,
+          qty: Qty,
+          type: Type,
+          rate: Rate,
+        } = data;
+        let TotalQty = prev.TotalQty + parseFloat(Qty);
+        let TotalAmount = prev.TotalAmount + parseFloat(Qty) * parseFloat(Rate);
         let TotalItem = prev.TotalItem + 1;
         return {
           ...prev,
@@ -122,12 +136,13 @@ export default function CreateReturn(props) {
               type: Type,
               qty: Qty,
               rate: Rate,
-              subtotal: parseInt(Rate) * parseInt(Qty),
+              subtotal: parseFloat(Rate) * parseFloat(Qty),
               key: uuidv4(),
             },
             ...prev.TableRows,
           ],
           showStockTable: false,
+          isDataChanged: true,
         };
       });
   };
@@ -135,6 +150,7 @@ export default function CreateReturn(props) {
     setReturnData((prev) => ({
       ...prev,
       [event.target.name]: event.target.value,
+      isDataChanged: true,
     }));
   };
   const saveAndClose = (e) => {
@@ -148,10 +164,10 @@ export default function CreateReturn(props) {
   const handleRemove = (indexOfRow) => {
     setReturnData((prev) => {
       let TotalQty =
-        prev.TotalQty - parseInt(prev.TableRows[indexOfRow]["qty"]);
+        prev.TotalQty - parseFloat(prev.TableRows[indexOfRow]["qty"]);
       let TotalAmount =
-        prev.TotalAmount - parseInt(prev.TableRows[indexOfRow]["subtotal"]);
-      let TotalItem = parseInt(prev.TotalItem) - 1;
+        prev.TotalAmount - parseFloat(prev.TableRows[indexOfRow]["subtotal"]);
+      let TotalItem = parseFloat(prev.TotalItem) - 1;
       const TableRows = prev.TableRows.filter(
         (data, index) => index !== indexOfRow
       );
@@ -161,6 +177,7 @@ export default function CreateReturn(props) {
         TotalAmount: TotalAmount,
         TotalItem: TotalItem,
         TableRows: TableRows,
+        isDataChanged: true,
       };
     });
   };
@@ -171,10 +188,10 @@ export default function CreateReturn(props) {
       const TableRows = prev.TableRows.map((data, index) => {
         if (index === indexOfRow) {
           data[name] = value;
-          data["subtotal"] = parseInt(data["qty"]) * parseInt(data["rate"]);
+          data["subtotal"] = parseFloat(data["qty"]) * parseFloat(data["rate"]);
         }
-        TotalAmount += parseInt(data["subtotal"]);
-        TotalQty += parseInt(data["qty"]);
+        TotalAmount += parseFloat(data["subtotal"]);
+        TotalQty += parseFloat(data["qty"]);
         return data;
       });
       return {
@@ -182,6 +199,7 @@ export default function CreateReturn(props) {
         TableRows: TableRows,
         TotalAmount: TotalAmount,
         TotalQty: TotalQty,
+        isDataChanged: true,
       };
     });
   };
@@ -190,14 +208,52 @@ export default function CreateReturn(props) {
       handleRemove(index);
     }
   };
+  const handleNextFocus = (nextLook) => {
+    var nextFocus = containerRef.current.querySelectorAll(
+      `[data-name="${nextLook}"]`
+    )[0];
+    preOrderHelper(nextFocus).focus();
+  };
   const handleEnterKeyDown = (e, nextLook) => {
     if (e.which === 13) {
-      var nextFocus = containerRef.current.querySelectorAll(nextLook)[0];
-      while (nextFocus && nextFocus.tabIndex === -1)
-        nextFocus = nextFocus.childNodes[0];
-      nextFocus.focus();
+      handleNextFocus(nextLook);
     }
   };
+  const preOrderHelper = useCallback((root) => {
+    if (root !== null) {
+      if (root.tabIndex !== -1) return root;
+      var nodes = root.childNodes;
+      var isFound = null;
+      for (var i = 0; i < nodes.length; i++) {
+        isFound = preOrderHelper(nodes[i]);
+        if (isFound instanceof Element) return isFound;
+      }
+    }
+    return null;
+  }, []);
+  const handleCloseConfirmation = useCallback(() => {
+    if (ReturnData.isDataChanged)
+      setReturnData((prev) => ({
+        ...prev,
+        showConfirmation: true,
+      }));
+    else props.closeModal();
+  }, [props, ReturnData]);
+  const handleEscape = useCallback(
+    (e) => {
+      if (e.which === 27) {
+        handleCloseConfirmation();
+      }
+    },
+    [handleCloseConfirmation]
+  );
+  useEffect(() => {
+    const container = containerRef.current;
+    container.addEventListener("keydown", handleEscape);
+    return () => {
+      container.removeEventListener("keydown", handleEscape);
+    };
+  }, [containerRef, handleEscape]);
   return (
     <div ref={containerRef}>
       <Grid container spacing={1} className={classes.button}>
@@ -206,11 +262,11 @@ export default function CreateReturn(props) {
             Last Return
           </Typography>
           <TextField
+            disabled={isDisabled()}
             className={classes.textField}
             label="Name"
             variant="outlined"
             fullWidth={true}
-            disabled={true}
             value={ReturnData.MerchantName}
           />
         </Grid>
@@ -219,6 +275,7 @@ export default function CreateReturn(props) {
             {ReturnData.LastReturn}
           </Typography>
           <Button
+            disabled={isDisabled()}
             variant="contained"
             size="large"
             color="primary"
@@ -245,23 +302,25 @@ export default function CreateReturn(props) {
         </Grid>
         <Grid item sm={4}>
           <TextField
+            disabled={isDisabled()}
             className={classes.textField}
             type="date"
+            data-name="date"
+            onKeyDown={(e) => {
+              handleEnterKeyDown(e, "phoneno1");
+            }}
             fullWidth={true}
             value={ReturnData.Date}
             onChange={handleReturnDataChange}
             name="Date"
           />
           <TextField
+            disabled={isDisabled()}
             className={classes.textField}
-            label="PhoneNo2"
-            variant="outlined"
-            value={ReturnData.PhoneNo2}
-            onChange={handleReturnDataChange}
-            name="PhoneNo2"
-          />
-          <TextField
-            className={classes.textField}
+            onKeyDown={(e) => {
+              handleEnterKeyDown(e, "phoneno2");
+            }}
+            data-name="phoneno1"
             label="PhoneNo1"
             variant="outlined"
             value={ReturnData.PhoneNo1}
@@ -270,6 +329,24 @@ export default function CreateReturn(props) {
           />
           <TextField
             className={classes.textField}
+            disabled={isDisabled()}
+            onKeyDown={(e) => {
+              handleEnterKeyDown(e, "address");
+            }}
+            data-name="phoneno2"
+            label="PhoneNo2"
+            variant="outlined"
+            value={ReturnData.PhoneNo2}
+            onChange={handleReturnDataChange}
+            name="PhoneNo2"
+          />
+          <TextField
+            className={classes.textField}
+            disabled={isDisabled()}
+            onKeyDown={(e) => {
+              handleEnterKeyDown(e, "remarks");
+            }}
+            data-name="address"
             label="Address"
             variant="outlined"
             value={ReturnData.Address}
@@ -288,7 +365,12 @@ export default function CreateReturn(props) {
         <Grid item sm={4}>
           <TextField
             className={classes.textField}
+            disabled={isDisabled()}
             label="Remarks"
+            onKeyDown={(e) => {
+              handleEnterKeyDown(e, "tile");
+            }}
+            data-name="remarks"
             variant="outlined"
             value={ReturnData.Remarks}
             onChange={handleReturnDataChange}
@@ -300,6 +382,7 @@ export default function CreateReturn(props) {
           <Button
             variant="contained"
             size="large"
+            disabled={isDisabled()}
             color="primary"
             className={classes.button}
             onClick={() => {
@@ -308,7 +391,7 @@ export default function CreateReturn(props) {
             }}
             data-name="tile"
           >
-            Select Tile
+            Select Item
           </Button>
         </Grid>
       </Grid>
@@ -344,13 +427,14 @@ export default function CreateReturn(props) {
                   <TextField
                     type="number"
                     InputProps={{ inputProps: { min: 1 } }}
+                    disabled={isDisabled()}
                     autoFocus={index === 0 ? true : false}
                     onChange={(e) => {
                       handleUpdate(index, e.target.value, "qty");
                     }}
                     onKeyDown={(e) => {
                       handleDeleteKeyDown(e, index);
-                      handleEnterKeyDown(e, "[data-name=rate]");
+                      handleEnterKeyDown(e, "rate");
                     }}
                     value={row.qty}
                   />
@@ -359,6 +443,7 @@ export default function CreateReturn(props) {
                   <TextField
                     data-name="rate"
                     type="number"
+                    disabled={isDisabled()}
                     InputProps={{ inputProps: { min: 1 } }}
                     value={row.rate}
                     onChange={(e) => {
@@ -366,7 +451,7 @@ export default function CreateReturn(props) {
                     }}
                     onKeyDown={(e) => {
                       handleDeleteKeyDown(e, index);
-                      handleEnterKeyDown(e, "[data-name=tile]");
+                      handleEnterKeyDown(e, "tile");
                     }}
                   />
                 </TableCell>
@@ -435,83 +520,39 @@ export default function CreateReturn(props) {
             size="large"
             color="primary"
             className={classes.button}
-            onClick={props.closeModal}
+            onClick={handleCloseConfirmation}
           >
             Close
           </Button>
         </Grid>
       </Grid>
       {ReturnData.showStockTable ? (
-        <CustomModal
-          showModal={ReturnData.showStockTable}
+        <StockTable
+          showStockTable={ReturnData.showStockTable}
           closeModal={() => {
             setReturnData((prev) => ({ ...prev, showStockTable: false }));
           }}
-          modalTitle="Stock Table"
-          ModalType={(props) => (
-            <CustomTable
-              {...{
-                columns: [
-                  "Name",
-                  "Size",
-                  "Company",
-                  "Qty",
-                  "Type",
-                  "Rate",
-                  "HNS",
-                ],
-                data: [
-                  ...dataGenerator(
-                    ["T1", "18x12", "ABC", 1000, "abs", 200, "12%"],
-                    105
-                  ),
-                ],
-                title: "Inventory",
-                isSearchEnable: true,
-                fixedHeader: true,
-                tableBodyHeight: "450px",
-                editCallback: onTileSelect,
-              }}
-            />
-          )}
-          modalWidth="60vw"
-          modalHeight="70vh"
-        ></CustomModal>
+          onTileDataSelect={onTileSelect}
+        />
       ) : null}
 
       {ReturnData.showMerchantTable ? (
-        <CustomModal
-          showModal={ReturnData.showMerchantTable}
+        <MerchantTable
+          showMerchantTable={ReturnData.showMerchantTable}
           closeModal={() => {
             setReturnData((prev) => ({ ...prev, showMerchantTable: false }));
           }}
-          modalTitle="Merchant Table"
-          ModalType={(props) => (
-            <CustomTable
-              {...{
-                columns: ["Company", "Address", "Phone No1", "Phone No2"],
-                data: [
-                  ...dataGenerator(
-                    [
-                      "ABC",
-                      "asdasfasddasdas",
-                      "+912123123123",
-                      "+912123123123",
-                    ],
-                    56
-                  ),
-                ],
-                title: "Company",
-                isSearchEnable: true,
-                fixedHeader: true,
-                tableBodyHeight: "450px",
-                editCallback: onMerchantSelect,
-              }}
-            />
-          )}
-          modalWidth="60vw"
-          modalHeight="70vh"
-        ></CustomModal>
+          onMerchantDataSelect={onMerchantSelect}
+        />
+      ) : null}
+      {ReturnData.showConfirmation ? (
+        <ConfirmationModal
+          showConfirmation={ReturnData.showConfirmation}
+          closeConfirmation={() => {
+            setReturnData((prev) => ({ ...prev, showConfirmation: false }));
+          }}
+          okBtnCallBack={props.closeModal}
+        ></ConfirmationModal>
       ) : null}
     </div>
   );

@@ -1,4 +1,4 @@
-import React, { useState, useRef } from "react";
+import React, { useState, useRef, useCallback, useEffect } from "react";
 import {
   TextField,
   Grid,
@@ -14,15 +14,9 @@ import {
   makeStyles,
 } from "@material-ui/core";
 import { v4 as uuidv4 } from "uuid";
-import CustomModal from "../modal";
-import CustomTable from "../table";
-const dataGenerator = (data, length) => {
-  var dummy = [];
-  for (var i = 0; i < length; i++) {
-    dummy.push(data);
-  }
-  return dummy;
-};
+import { StockTable } from "../customTables";
+import ConfirmationModal from "../confirmationModal";
+
 const useStyles = makeStyles((theme) => ({
   textField: {
     margin: "1% 2%",
@@ -45,6 +39,9 @@ const useStyles = makeStyles((theme) => ({
 
 export default function CreatePurchase(props) {
   const classes = useStyles();
+  const isDisabled = () => {
+    return props.mode === "Delete";
+  };
   const containerRef = useRef(null);
   const [PurchaseData, setPurchaseData] = useState({
     Date: props.Date ?? new Date().toISOString().substring(0, 10),
@@ -54,6 +51,8 @@ export default function CreatePurchase(props) {
     TotalAmount: props.TotalAmount ?? 0,
     TableRows: props.TableRows ?? [],
     showStockTable: false,
+    showConfirmation: false,
+    isDataChanged: false,
   });
   const save = () => {
     //Send Data to Server
@@ -68,14 +67,16 @@ export default function CreatePurchase(props) {
       TotalAmount: 0,
       TableRows: [],
       showStockTable: false,
+      showConfirmation: false,
+      isDataChanged: false,
     });
   };
   const onTileSelect = (data) => {
     if (data)
       setPurchaseData((prev) => {
-        const [Name, , , Qty, , Rate] = data;
-        let TotalQty = prev.TotalQty + parseInt(Qty);
-        let TotalAmount = prev.TotalAmount + parseInt(Qty) * parseInt(Rate);
+        const { name: Name, qty: Qty, rate: Rate } = data;
+        let TotalQty = prev.TotalQty + parseFloat(Qty);
+        let TotalAmount = prev.TotalAmount + parseFloat(Qty) * parseFloat(Rate);
         return {
           ...prev,
           TotalQty: TotalQty,
@@ -85,12 +86,13 @@ export default function CreatePurchase(props) {
               name: Name,
               qty: Qty,
               rate: Rate,
-              amount: parseInt(Rate) * parseInt(Qty),
+              amount: parseFloat(Rate) * parseFloat(Qty),
               key: uuidv4(),
             },
             ...prev.TableRows,
           ],
           showStockTable: false,
+          isDataChanged: true,
         };
       });
   };
@@ -98,6 +100,7 @@ export default function CreatePurchase(props) {
     setPurchaseData((prev) => ({
       ...prev,
       [event.target.name]: event.target.value,
+      isDataChanged: true,
     }));
   };
   const saveAndClose = (e) => {
@@ -111,9 +114,9 @@ export default function CreatePurchase(props) {
   const handleRemove = (indexOfRow) => {
     setPurchaseData((prev) => {
       let TotalQty =
-        prev.TotalQty - parseInt(prev.TableRows[indexOfRow]["qty"]);
+        prev.TotalQty - parseFloat(prev.TableRows[indexOfRow]["qty"]);
       let TotalAmount =
-        prev.TotalAmount - parseInt(prev.TableRows[indexOfRow]["subtotal"]);
+        prev.TotalAmount - parseFloat(prev.TableRows[indexOfRow]["subtotal"]);
       const TableRows = prev.TableRows.filter(
         (data, index) => index !== indexOfRow
       );
@@ -122,6 +125,7 @@ export default function CreatePurchase(props) {
         TotalQty: TotalQty,
         TotalAmount: TotalAmount,
         TableRows: TableRows,
+        isDataChanged: true,
       };
     });
   };
@@ -132,10 +136,10 @@ export default function CreatePurchase(props) {
       const TableRows = prev.TableRows.map((data, index) => {
         if (index === indexOfRow) {
           data[name] = value;
-          data["amount"] = parseInt(data["qty"]) * parseInt(data["rate"]);
+          data["amount"] = parseFloat(data["qty"]) * parseFloat(data["rate"]);
         }
-        TotalAmount += parseInt(data["amount"]);
-        TotalQty += parseInt(data["qty"]);
+        TotalAmount += parseFloat(data["amount"]);
+        TotalQty += parseFloat(data["qty"]);
         return data;
       });
       return {
@@ -143,23 +147,58 @@ export default function CreatePurchase(props) {
         TableRows: TableRows,
         TotalAmount: TotalAmount,
         TotalQty: TotalQty,
+        isDataChanged: true,
       };
     });
   };
   const handleDeleteKeyDown = (e, index) => {
     if (e.which === 46) {
-      console.log("I also here");
       handleRemove(index);
     }
   };
   const handleEnterKeyDown = (e, nextLook) => {
     if (e.which === 13) {
-      var nextFocus = containerRef.current.querySelectorAll(nextLook)[0];
-      while (nextFocus && nextFocus.tabIndex === -1)
-        nextFocus = nextFocus.childNodes[0];
-      nextFocus.focus();
+      var nextFocus = containerRef.current.querySelectorAll(
+        `[data-name="${nextLook}"]`
+      )[0];
+      preOrderHelper(nextFocus).focus();
     }
   };
+  const preOrderHelper = useCallback((root) => {
+    if (root !== null) {
+      if (root.tabIndex !== -1) return root;
+      var nodes = root.childNodes;
+      var isFound = null;
+      for (var i = 0; i < nodes.length; i++) {
+        isFound = preOrderHelper(nodes[i]);
+        if (isFound instanceof Element) return isFound;
+      }
+    }
+    return null;
+  }, []);
+  const handleCloseConfirmation = useCallback(() => {
+    if (PurchaseData.isDataChanged)
+      setPurchaseData((prev) => ({
+        ...prev,
+        showConfirmation: true,
+      }));
+    else props.closeModal();
+  }, [props, PurchaseData]);
+  const handleEscape = useCallback(
+    (e) => {
+      if (e.which === 27) {
+        handleCloseConfirmation();
+      }
+    },
+    [handleCloseConfirmation]
+  );
+  useEffect(() => {
+    const container = containerRef.current;
+    container.addEventListener("keydown", handleEscape);
+    return () => {
+      container.removeEventListener("keydown", handleEscape);
+    };
+  }, [containerRef, handleEscape]);
   return (
     <div ref={containerRef}>
       <Grid
@@ -179,20 +218,29 @@ export default function CreatePurchase(props) {
         </Grid>
         <Grid item sm={6}>
           <TextField
+            disabled={isDisabled()}
             autoFocus={true}
             name="Date"
             label="Date"
             type="date"
             value={PurchaseData.Date}
             onChange={handlePurchaseDataChange}
+            onKeyDown={(e) => {
+              handleEnterKeyDown(e, "title");
+            }}
             className={classes.textField}
           />
           <TextField
+            disabled={isDisabled()}
             className={classes.textField}
             value={PurchaseData.Title}
             onChange={handlePurchaseDataChange}
             label="Title"
             name="Title"
+            data-name="title"
+            onKeyDown={(e) => {
+              handleEnterKeyDown(e, "tile");
+            }}
             variant="outlined"
             fullWidth={true}
           />
@@ -200,6 +248,7 @@ export default function CreatePurchase(props) {
         <Grid item sm={2} className={classes.label}>
           <Button
             data-name="tile"
+            disabled={isDisabled()}
             variant="contained"
             size="large"
             color="primary"
@@ -209,7 +258,7 @@ export default function CreatePurchase(props) {
               setPurchaseData((prev) => ({ ...prev, showStockTable: true }));
             }}
           >
-            Select Tile
+            Select Item
           </Button>
         </Grid>
       </Grid>
@@ -232,6 +281,7 @@ export default function CreatePurchase(props) {
                 <TableCell>
                   <TextField
                     type="number"
+                    disabled={isDisabled()}
                     InputProps={{ inputProps: { min: 1 } }}
                     autoFocus={index === 0 ? true : false}
                     onChange={(e) => {
@@ -239,7 +289,7 @@ export default function CreatePurchase(props) {
                     }}
                     onKeyDown={(e) => {
                       handleDeleteKeyDown(e, index);
-                      handleEnterKeyDown(e, "[data-name=rate]");
+                      handleEnterKeyDown(e, "rate");
                     }}
                     value={row.qty}
                   />
@@ -248,6 +298,7 @@ export default function CreatePurchase(props) {
                   <TextField
                     data-name="rate"
                     type="number"
+                    disabled={isDisabled()}
                     InputProps={{ inputProps: { min: 1 } }}
                     value={row.rate}
                     onChange={(e) => {
@@ -255,7 +306,7 @@ export default function CreatePurchase(props) {
                     }}
                     onKeyDown={(e) => {
                       handleDeleteKeyDown(e, index);
-                      handleEnterKeyDown(e, "[data-name=tile]");
+                      handleEnterKeyDown(e, "tile");
                     }}
                   />
                 </TableCell>
@@ -293,6 +344,7 @@ export default function CreatePurchase(props) {
         </Grid>
         <Grid item sm={4}>
           <TextField
+            disabled={isDisabled()}
             className={classes.textField}
             value={PurchaseData.Remarks}
             onChange={handlePurchaseDataChange}
@@ -328,48 +380,29 @@ export default function CreatePurchase(props) {
             size="large"
             color="primary"
             className={classes.button}
-            onClick={props.closeModal}
+            onClick={handleCloseConfirmation}
           >
             Close
           </Button>
         </Grid>
       </Grid>
       {PurchaseData.showStockTable ? (
-        <CustomModal
-          showModal={PurchaseData.showStockTable}
+        <StockTable
+          showStockTable={PurchaseData.showStockTable}
           closeModal={() => {
             setPurchaseData((prev) => ({ ...prev, showStockTable: false }));
           }}
-          modalTitle="Stock Table"
-          ModalType={(props) => (
-            <CustomTable
-              {...{
-                columns: [
-                  "Name",
-                  "Size",
-                  "Company",
-                  "Qty",
-                  "Type",
-                  "Rate",
-                  "HNS",
-                ],
-                data: [
-                  ...dataGenerator(
-                    ["T1", "18x12", "ABC", 1000, "abs", 200, "12%"],
-                    105
-                  ),
-                ],
-                title: "Inventory",
-                isSearchEnable: true,
-                fixedHeader: true,
-                tableBodyHeight: "450px",
-                editCallback: onTileSelect,
-              }}
-            />
-          )}
-          modalWidth="60vw"
-          modalHeight="70vh"
-        ></CustomModal>
+          onTileDataSelect={onTileSelect}
+        />
+      ) : null}
+      {PurchaseData.showConfirmation ? (
+        <ConfirmationModal
+          showConfirmation={PurchaseData.showConfirmation}
+          closeConfirmation={() => {
+            setPurchaseData((prev) => ({ ...prev, showConfirmation: false }));
+          }}
+          okBtnCallBack={props.closeModal}
+        ></ConfirmationModal>
       ) : null}
     </div>
   );

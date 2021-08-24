@@ -1,4 +1,4 @@
-import React, { useState, useRef } from "react";
+import React, { useState, useRef, useCallback, useEffect } from "react";
 import {
   TextField,
   Grid,
@@ -14,15 +14,8 @@ import {
   makeStyles,
 } from "@material-ui/core";
 import { v4 as uuidv4 } from "uuid";
-import CustomModal from "../modal";
-import CustomTable from "../table";
-const dataGenerator = (data, length) => {
-  var dummy = [];
-  for (var i = 0; i < length; i++) {
-    dummy.push(data);
-  }
-  return dummy;
-};
+import { StockTable } from "../customTables";
+import ConfirmationModal from "../confirmationModal";
 const useStyles = makeStyles((theme) => ({
   textField: {
     margin: "1% 2%",
@@ -49,13 +42,20 @@ const useStyles = makeStyles((theme) => ({
 export default function CreateBreakage(props) {
   const classes = useStyles();
   const containerRef = useRef(null);
+  const isDisabled = () => {
+    return props.mode === "Delete";
+  };
   const [BreakageData, setBreakageData] = useState({
+    Date: props.Date ?? new Date().toISOString().substring(0, 10),
+    Title: props.Title ?? "",
     Remarks: props.Remarks ?? "",
     TotalQty: props.TotalQty ?? 0,
     TotalAmount: props.TotalAmount ?? 0,
     TotalItem: props.TotalItem ?? 0,
     TableRows: props.TableRows ?? [],
     showStockTable: false,
+    showConfirmation: false,
+    isDataChanged: false,
   });
   const save = () => {
     //Send Data to Server
@@ -63,20 +63,24 @@ export default function CreateBreakage(props) {
   };
   const cleanForm = () => {
     setBreakageData({
+      Date: new Date().toISOString().substring(0, 10),
+      Title: "",
       Remarks: "",
       TotalQty: 0,
       TotalAmount: 0,
       TotalItem: 0,
       TableRows: [],
       showStockTable: false,
+      showConfirmation: false,
+      isDataChanged: false,
     });
   };
   const onTileSelect = (data) => {
     if (data)
       setBreakageData((prev) => {
-        const [Product, Size, Company, Qty, Type, Rate] = data;
-        let TotalQty = prev.TotalQty + parseInt(Qty);
-        let TotalAmount = prev.TotalAmount + parseInt(Qty) * parseInt(Rate);
+        const { name: Name, qty: Qty, rate: Rate } = data;
+        let TotalQty = prev.TotalQty + parseFloat(Qty);
+        let TotalAmount = prev.TotalAmount + parseFloat(Qty) * parseFloat(Rate);
         let TotalItem = prev.TotalItem + 1;
         return {
           ...prev,
@@ -85,18 +89,16 @@ export default function CreateBreakage(props) {
           TotalItem: TotalItem,
           TableRows: [
             {
-              size: Size,
-              product: Product,
-              company: Company,
-              type: Type,
+              name: Name,
               qty: Qty,
               rate: Rate,
-              subtotal: parseInt(Rate) * parseInt(Qty),
+              subtotal: parseFloat(Rate) * parseFloat(Qty),
               key: uuidv4(),
             },
             ...prev.TableRows,
           ],
           showStockTable: false,
+          isDataChanged: true,
         };
       });
   };
@@ -104,6 +106,7 @@ export default function CreateBreakage(props) {
     setBreakageData((prev) => ({
       ...prev,
       [event.target.name]: event.target.value,
+      isDataChanged: true,
     }));
   };
   const saveAndClose = (e) => {
@@ -117,10 +120,10 @@ export default function CreateBreakage(props) {
   const handleRemove = (indexOfRow) => {
     setBreakageData((prev) => {
       let TotalQty =
-        prev.TotalQty - parseInt(prev.TableRows[indexOfRow]["qty"]);
+        prev.TotalQty - parseFloat(prev.TableRows[indexOfRow]["qty"]);
       let TotalAmount =
-        prev.TotalAmount - parseInt(prev.TableRows[indexOfRow]["subtotal"]);
-      let TotalItem = parseInt(prev.TotalItem) - 1;
+        prev.TotalAmount - parseFloat(prev.TableRows[indexOfRow]["subtotal"]);
+      let TotalItem = parseFloat(prev.TotalItem) - 1;
       const TableRows = prev.TableRows.filter(
         (data, index) => index !== indexOfRow
       );
@@ -130,6 +133,7 @@ export default function CreateBreakage(props) {
         TotalAmount: TotalAmount,
         TotalItem: TotalItem,
         TableRows: TableRows,
+        isDataChanged: true,
       };
     });
   };
@@ -140,10 +144,10 @@ export default function CreateBreakage(props) {
       const TableRows = prev.TableRows.map((data, index) => {
         if (index === indexOfRow) {
           data[name] = value;
-          data["subtotal"] = parseInt(data["qty"]) * parseInt(data["rate"]);
+          data["subtotal"] = parseFloat(data["qty"]) * parseFloat(data["rate"]);
         }
-        TotalAmount += parseInt(data["subtotal"]);
-        TotalQty += parseInt(data["qty"]);
+        TotalAmount += parseFloat(data["subtotal"]);
+        TotalQty += parseFloat(data["qty"]);
         return data;
       });
       return {
@@ -151,6 +155,7 @@ export default function CreateBreakage(props) {
         TableRows: TableRows,
         TotalAmount: TotalAmount,
         TotalQty: TotalQty,
+        isDataChanged: true,
       };
     });
   };
@@ -161,34 +166,92 @@ export default function CreateBreakage(props) {
   };
   const handleEnterKeyDown = (e, nextLook) => {
     if (e.which === 13) {
-      var nextFocus = containerRef.current.querySelectorAll(nextLook)[0];
-      while (nextFocus && nextFocus.tabIndex === -1)
-        nextFocus = nextFocus.childNodes[0];
-      nextFocus.focus();
+      var nextFocus = containerRef.current.querySelectorAll(
+        `[data-name="${nextLook}"]`
+      )[0];
+      preOrderHelper(nextFocus).focus();
     }
   };
+  const preOrderHelper = useCallback((root) => {
+    if (root !== null) {
+      if (root.tabIndex !== -1) return root;
+      var nodes = root.childNodes;
+      var isFound = null;
+      for (var i = 0; i < nodes.length; i++) {
+        isFound = preOrderHelper(nodes[i]);
+        if (isFound instanceof Element) return isFound;
+      }
+    }
+    return null;
+  }, []);
+  const handleCloseConfirmation = useCallback(() => {
+    if (BreakageData.isDataChanged)
+      setBreakageData((prev) => ({
+        ...prev,
+        showConfirmation: true,
+      }));
+    else props.closeModal();
+  }, [props, BreakageData]);
+  const handleEscape = useCallback(
+    (e) => {
+      if (e.which === 27) {
+        handleCloseConfirmation();
+      }
+    },
+    [handleCloseConfirmation]
+  );
+  useEffect(() => {
+    const container = containerRef.current;
+    container.addEventListener("keydown", handleEscape);
+    return () => {
+      container.removeEventListener("keydown", handleEscape);
+    };
+  }, [containerRef, handleEscape]);
   return (
     <div ref={containerRef}>
       <Grid container className={classes.button}>
         <Grid item sm={1}>
           <Typography gutterBottom className={classes.label}>
-            Remarks
+            Date
+          </Typography>
+          <Typography gutterBottom className={classes.label}>
+            Title
           </Typography>
         </Grid>
-        <Grid item sm={4}>
+        <Grid item sm={6}>
           <TextField
+            disabled={isDisabled()}
             autoFocus={true}
-            className={classes.textField}
-            label="Remarks"
-            variant="outlined"
-            value={BreakageData.Remarks}
+            name="Date"
+            label="Date"
+            type="date"
+            value={BreakageData.Date}
             onChange={handleBreakageDataChange}
-            name="Remarks"
+            className={classes.textField}
+            onKeyDown={(e) => {
+              handleEnterKeyDown(e, "title");
+            }}
+          />
+          <TextField
+            disabled={isDisabled()}
+            className={classes.textField}
+            value={BreakageData.Title}
+            onChange={handleBreakageDataChange}
+            label="Title"
+            name="Title"
+            data-name="title"
+            onKeyDown={(e) => {
+              if (e.which === 13) {
+                handleEnterKeyDown(e, "tile");
+              }
+            }}
+            variant="outlined"
             fullWidth={true}
           />
         </Grid>
         <Grid item sm={2} className={classes.label}>
           <Button
+            disabled={isDisabled()}
             data-name="tile"
             variant="contained"
             size="large"
@@ -199,7 +262,7 @@ export default function CreateBreakage(props) {
               setBreakageData((prev) => ({ ...prev, showStockTable: true }));
             }}
           >
-            Select Tile
+            Select Item
           </Button>
         </Grid>
       </Grid>
@@ -207,32 +270,21 @@ export default function CreateBreakage(props) {
         <Table className={classes.table} stickyHeader aria-label="sticky table">
           <TableHead>
             <TableRow>
-              <TableCell>Size</TableCell>
-              <TableCell>Product</TableCell>
-              <TableCell>Company</TableCell>
-              <TableCell>Type</TableCell>
+              <TableCell>Name</TableCell>
               <TableCell>QTY</TableCell>
               <TableCell>Rate</TableCell>
-              <TableCell>Sub Total</TableCell>
+              <TableCell>Amount</TableCell>
             </TableRow>
           </TableHead>
           <TableBody>
             {BreakageData.TableRows.map((row, index) => (
               <TableRow key={row.key}>
                 <TableCell component="th" scope="row">
-                  {row.size}
-                </TableCell>
-                <TableCell component="th" scope="row">
-                  {row.product}
-                </TableCell>
-                <TableCell component="th" scope="row">
-                  {row.company}
-                </TableCell>
-                <TableCell component="th" scope="row">
-                  {row.type}
+                  {row.name}
                 </TableCell>
                 <TableCell>
                   <TextField
+                    disabled={isDisabled()}
                     type="number"
                     InputProps={{ inputProps: { min: 1 } }}
                     autoFocus={index === 0 ? true : false}
@@ -241,13 +293,14 @@ export default function CreateBreakage(props) {
                     }}
                     onKeyDown={(e) => {
                       handleDeleteKeyDown(e, index);
-                      handleEnterKeyDown(e, "[data-name=rate]");
+                      handleEnterKeyDown(e, "rate");
                     }}
                     value={row.qty}
                   />
                 </TableCell>
                 <TableCell>
                   <TextField
+                    disabled={isDisabled()}
                     data-name="rate"
                     type="number"
                     InputProps={{ inputProps: { min: 1 } }}
@@ -257,7 +310,7 @@ export default function CreateBreakage(props) {
                     }}
                     onKeyDown={(e) => {
                       handleDeleteKeyDown(e, index);
-                      handleEnterKeyDown(e, "[data-name=tile]");
+                      handleEnterKeyDown(e, "tile");
                     }}
                   />
                 </TableCell>
@@ -292,6 +345,23 @@ export default function CreateBreakage(props) {
         justify="center"
         className={classes.button}
       >
+        <Grid item sm={1}>
+          <Typography gutterBottom className={classes.label}>
+            Remarks
+          </Typography>
+        </Grid>
+        <Grid item sm={4}>
+          <TextField
+            disabled={isDisabled()}
+            className={classes.textField}
+            value={BreakageData.Remarks}
+            onChange={handleBreakageDataChange}
+            name="Remarks"
+            label="Remarks"
+            variant="outlined"
+            fullWidth={true}
+          />
+        </Grid>
         <Grid item sm={7} className={classes.label}>
           <Button
             variant="contained"
@@ -326,48 +396,29 @@ export default function CreateBreakage(props) {
             size="large"
             color="primary"
             className={classes.button}
-            onClick={props.closeModal}
+            onClick={handleCloseConfirmation}
           >
             Close
           </Button>
         </Grid>
       </Grid>
       {BreakageData.showStockTable ? (
-        <CustomModal
-          showModal={BreakageData.showStockTable}
+        <StockTable
+          showStockTable={BreakageData.showStockTable}
           closeModal={() => {
             setBreakageData((prev) => ({ ...prev, showStockTable: false }));
           }}
-          modalTitle="Stock Table"
-          ModalType={(props) => (
-            <CustomTable
-              {...{
-                columns: [
-                  "Name",
-                  "Size",
-                  "Company",
-                  "Qty",
-                  "Type",
-                  "Rate",
-                  "HNS",
-                ],
-                data: [
-                  ...dataGenerator(
-                    ["T1", "18x12", "ABC", 1000, "abs", 200, "12%"],
-                    105
-                  ),
-                ],
-                title: "Inventory",
-                isSearchEnable: true,
-                fixedHeader: true,
-                tableBodyHeight: "450px",
-                editCallback: onTileSelect,
-              }}
-            />
-          )}
-          modalWidth="60vw"
-          modalHeight="70vh"
-        ></CustomModal>
+          onTileDataSelect={onTileSelect}
+        />
+      ) : null}
+      {BreakageData.showConfirmation ? (
+        <ConfirmationModal
+          showConfirmation={BreakageData.showConfirmation}
+          closeConfirmation={() => {
+            setBreakageData((prev) => ({ ...prev, showConfirmation: false }));
+          }}
+          okBtnCallBack={props.closeModal}
+        ></ConfirmationModal>
       ) : null}
     </div>
   );

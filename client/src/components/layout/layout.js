@@ -75,9 +75,6 @@ export default function Layout() {
         ModalType: CreatePurchase,
         modalWidth: "100vw",
         modalHeight: "99vh",
-        ModalTypeData: {
-          mode: "Edit",
-        },
       },
       Stock: {
         showModal: true,
@@ -168,8 +165,24 @@ export default function Layout() {
         modalHeight: "99vh",
       },
     };
-    const data = { ...ModalData[type], key: uuidv4() };
-    setModalStack((oldStack) => [...oldStack, data]);
+    setModalStack((oldStack) => {
+      const isModalExist = oldStack.filter(
+        (item) => item.modalTitle === ModalData[type].modalTitle
+      );
+      const remainData = oldStack.filter(
+        (item) => item.modalTitle !== ModalData[type].modalTitle
+      );
+      let newStack = [...remainData];
+      if (isModalExist.length) {
+        newStack = [...newStack, ...isModalExist];
+      } else {
+        newStack = [...newStack, { ...ModalData[type], key: uuidv4() }];
+      }
+      console.log(isModalExist);
+      console.log(remainData);
+      console.log(newStack);
+      return [...newStack];
+    });
   }, []);
 
   const editModalStackPush = useCallback((type) => {
@@ -209,9 +222,9 @@ export default function Layout() {
         modalHeight: "65vh",
         ModalTypeData: {
           mode: "Edit",
-          Size: "12X12",
-          Type: "AXZ",
-          HSN: "12",
+          Size: "123x123",
+          Type: "ABC",
+          HSN: "12%",
           Name: "proxitile",
           Rate: 100,
           Company: "ABC",
@@ -243,12 +256,14 @@ export default function Layout() {
           mode: "Edit",
           Remarks: "Nothing",
           TotalQty: 12,
+          Title: "Something",
+          Date: "2021-04-12",
           TotalAmount: 120,
           TotalItem: 1,
           TableRows: [
             {
               size: "12x12",
-              product: "asda",
+              name: "asda",
               company: "afsa",
               type: "asfas",
               qty: 12,
@@ -307,7 +322,7 @@ export default function Layout() {
           PhoneNo2: "+464646464646",
           Email: "asda@afamslk.com",
           PANNo: "ASDASDd12123",
-          State: 10,
+          State: { code: "KA", title: "Karnataka" },
           GSTIN: "asdaasda",
         },
       },
@@ -322,7 +337,7 @@ export default function Layout() {
           mode: "Edit",
           Remarks: "Nothing",
           TotalQty: 120,
-          TotalAmount: 12000,
+          TotalAmount: 11760,
           Count: 1,
           TableRows: [
             {
@@ -331,8 +346,8 @@ export default function Layout() {
               qty: 120,
               rate: 100,
               hsn: 12,
-              discount: 0,
-              subtotal: 12000,
+              discount: 2,
+              subtotal: 11760,
               key: uuidv4(),
             },
           ],
@@ -341,8 +356,8 @@ export default function Layout() {
           Address: "asdasdasdas",
           PhoneNo1: "86784684684",
           PhoneNo2: "4444646546",
-          State: 10,
-          PaymentType: 10,
+          State: { code: "JH", title: "Jharkhand" },
+          PaymentType: "Check",
           TransportDetails: "Airplane",
           Transport: "Nothing",
           Weight: 0,
@@ -393,9 +408,9 @@ export default function Layout() {
         modalHeight: "65vh",
         ModalTypeData: {
           mode: "Delete",
-          Size: "12X12",
-          Type: "AXZ",
-          HSN: "12",
+          Size: "123x123",
+          Type: "ABC",
+          HSN: "12%",
           Name: "proxitile",
           Rate: 100,
           Company: "ABC",
@@ -426,13 +441,15 @@ export default function Layout() {
         ModalTypeData: {
           mode: "Delete",
           Remarks: "Nothing",
+          Title: "Something",
+          Date: "2021-04-12",
           TotalQty: 12,
           TotalAmount: 120,
           TotalItem: 1,
           TableRows: [
             {
               size: "12x12",
-              product: "asda",
+              name: "asda",
               company: "afsa",
               type: "asfas",
               qty: 12,
@@ -491,8 +508,47 @@ export default function Layout() {
           PhoneNo2: "+464646464646",
           Email: "asda@afamslk.com",
           PANNo: "ASDASDd12123",
-          State: 10,
+          State: { code: "KA", title: "Karnataka" },
           GSTIN: "asdaasda",
+        },
+      },
+      Invoice: {
+        showModal: true,
+        closeModal: modalStackPop,
+        modalTitle: "Delete Invoice",
+        ModalType: CreateInvoice,
+        modalWidth: "100vw",
+        modalHeight: "99vh",
+        ModalTypeData: {
+          mode: "Delete",
+          Remarks: "Nothing",
+          TotalQty: 120,
+          TotalAmount: 11760,
+          Count: 1,
+          TableRows: [
+            {
+              size: "123x123",
+              product: "asdasda",
+              qty: 120,
+              rate: 100,
+              hsn: 12,
+              discount: 2,
+              subtotal: 11760,
+              key: uuidv4(),
+            },
+          ],
+          MerchantName: "asdasd",
+          Date: "2021-04-02",
+          Address: "asdasdasdas",
+          PhoneNo1: "86784684684",
+          PhoneNo2: "4444646546",
+          State: { code: "JH", title: "Jharkhand" },
+          PaymentType: "Check",
+          TransportDetails: "Airplane",
+          Transport: "Nothing",
+          Weight: 0,
+          ShippedTo: {},
+          GSTIN: "asdasdasd",
         },
       },
     };
@@ -522,7 +578,7 @@ export default function Layout() {
         <AppBar position="fixed" className={classes.appBar}>
           <Toolbar>
             <Typography variant="h6" noWrap>
-              Z-THETA
+              NAVIN TEXTILE
             </Typography>
           </Toolbar>
         </AppBar>
@@ -534,9 +590,7 @@ export default function Layout() {
           }}
         >
           <Toolbar />
-          {/* <div className={classes.drawerContainer}> */}
           <Navigation></Navigation>
-          {/* </div> */}
         </Drawer>
         <main className={classes.content}>
           <Toolbar />
@@ -577,5 +631,14 @@ export default function Layout() {
 /*
 tune for where ever the custom table used
 fixedHeader: props.fixedHeader ?? false,
-tableBodyHeight: props.tableBodyHeight ?? "auto",
+tableBodyHeight: props.tableBodyHeight ?? "auto",\
+company and merchant gstin
+toggle button for paid or unpaid
+size structure change.
+last bill first in table
+Balance sheet of selected date.
+payment terms (under date )
+gst (2.5%) and cgst(2.5%) automatic calculation
+merchant profile with pending things. pdf for pending things.
+frameless with menu.
 */

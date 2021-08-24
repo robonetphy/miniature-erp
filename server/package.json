@@ -2,12 +2,15 @@
   "name": "server",
   "version": "1.0.0",
   "description": "This repository contains sample code for the following areas:",
-  "main": "src/main.js",
+  "main": "electron/main.js",
   "scripts": {
     "start": "electron .",
+    "start-dev": "nodemon --watch src --exec \"npm run build && node dist/index.js\"",
     "rebuild": "electron-rebuild -f -w sqlite3",
     "postinstall": "electron-builder install-app-deps",
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "prestart": "npm run -s build",
+    "clean": "rimraf dist",
+    "build": "npm run clean && babel src -s -D -d dist"
   },
   "repository": {
     "type": "git",
@@ -20,15 +23,22 @@
   },
   "homepage": "https://github.com/tarikguney/electron-with-sqlite3#readme",
   "devDependencies": {
+    "@babel/cli": "^7.13.16",
+    "@babel/core": "^7.14.0",
+    "@babel/preset-env": "^7.14.1",
     "electron": "^12.0.1",
     "electron-builder": "^22.10.5",
-    "electron-rebuild": "^2.3.5"
+    "electron-rebuild": "^2.3.5",
+    "nodemon": "^2.0.7",
+    "rimraf": "^3.0.2"
   },
   "dependencies": {
+    "body-parser": "^1.19.0",
     "cors": "^2.8.5",
     "express": "^4.17.1",
     "knex": "^0.95.2",
-    "sqlite3": "^5.0.2"
+    "sqlite3": "^5.0.2",
+    "uuid": "^8.3.2"
   },
   "build": {
     "appId": "com.umang",
@@ -37,5 +47,17 @@
       "target": "zip",
       "asar": false
     }
+  },
+  "babel": {
+    "presets": [
+      [
+        "@babel/env",
+        {
+          "targets": {
+            "node": "14.16.0"
+          }
+        }
+      ]
+    ]
   }
 }

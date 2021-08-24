@@ -1,4 +1,4 @@
-import React, { useState, useRef } from "react";
+import React, { useState, useRef, useEffect, useCallback } from "react";
 import {
   TextField,
   Grid,
@@ -7,6 +7,7 @@ import {
   makeStyles,
 } from "@material-ui/core";
 import CustomTable from "../table";
+import { v4 as uuidv4 } from "uuid";
 import useEnterNavigation from "../../hooks/useEnterNavigation";
 const useStyles = makeStyles((theme) => ({
   textField: {
@@ -27,7 +28,7 @@ const useStyles = makeStyles((theme) => ({
     margin: "1% 5%",
   },
 }));
-export default function ManageSize() {
+export default function ManageSize(props) {
   const classes = useStyles();
   const containerRef = useRef(null);
   const [SizeData, setSizeData] = useState({
@@ -47,11 +48,26 @@ export default function ManageSize() {
     save();
     setSizeData((prev) => ({
       ...prev,
-      TableData: [[prev.Size], ...prev.TableData],
+      TableData: [{ size: prev.Size, key: uuidv4() }, ...prev.TableData],
       Size: "",
     }));
   };
   useEnterNavigation(containerRef);
+  const handleEscape = useCallback(
+    (e) => {
+      if (e.which === 27) {
+        props.closeModal();
+      }
+    },
+    [props]
+  );
+  useEffect(() => {
+    const container = containerRef.current;
+    container.addEventListener("keydown", handleEscape);
+    return () => {
+      container.removeEventListener("keydown", handleEscape);
+    };
+  }, [containerRef, handleEscape]);
   return (
     <div ref={containerRef}>
       <Grid container className={classes.button}>
@@ -89,13 +105,11 @@ export default function ManageSize() {
       </Grid>
       <CustomTable
         {...{
-          columns: ["Size"],
-          isSearchEnable: true,
+          columns: [{ title: "Size", id: "size" }],
           title: "",
-          fixedHeader: true,
           tableBodyHeight: "500px",
-          selectableRows: "none",
           data: SizeData.TableData,
+          autoFocus: false,
         }}
       ></CustomTable>
     </div>

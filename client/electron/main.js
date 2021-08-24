@@ -15,7 +15,7 @@ function createWindow() {
     height: 600,
     webPreferences: {
       nodeIntegration: true,
-      contextIsolation: false
+      contextIsolation: false,
     },
   });
   mainWindow.loadURL(startUrl);
@@ -27,6 +27,8 @@ function createWindow() {
     mainWindow = null;
   });
 }
+app.commandLine.appendSwitch("high-dpi-support", 1);
+app.commandLine.appendSwitch("force-device-scale-factor", 1);
 app.on("ready", createWindow);
 app.on("window-all-closed", function () {
   if (process.platform !== "darwin") {

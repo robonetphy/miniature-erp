@@ -1,32 +1,37 @@
 import { useEffect, useCallback } from "react";
-const useArrowNavigation = (containerRef, editCallBack, deleteCallback) => {
+const useArrowNavigation = (
+  containerRef,
+  selectCallback,
+  editCallBack,
+  deleteCallback
+) => {
   const handleKeyDown = useCallback(
     (e) => {
-      var allArrowNavigation = containerRef.current.querySelectorAll(
-        '[id^="MUIDataTableSelectCell-"]'
+      var allSelectable = containerRef.current.querySelectorAll(
+        "[data-selected]"
       );
-      var currentFocus = document.querySelector(":focus");
       var currentIndex = null,
-        nextElement = null;
-      allArrowNavigation.forEach((element, index) => {
-        if (currentFocus.isSameNode(element)) currentIndex = index;
+        nextIndex = null;
+      allSelectable.forEach((element, index) => {
+        if (element.getAttribute("data-selected") === "true")
+          currentIndex = index;
       });
       if (e.which === 38) {
-        currentIndex = currentIndex ?? 0;
-        nextElement =
-          currentIndex - 1 === -1
-            ? allArrowNavigation[0]
-            : allArrowNavigation[currentIndex - 1];
+        nextIndex = currentIndex - 1;
       }
       if (e.which === 40) {
-        currentIndex = currentIndex ?? -1;
-        nextElement =
-          currentIndex + 1 === allArrowNavigation.length
-            ? allArrowNavigation[allArrowNavigation.length - 1]
-            : allArrowNavigation[currentIndex + 1];
+        nextIndex = currentIndex + 1;
       }
-      if (nextElement) nextElement.focus();
-
+      if (nextIndex === -1 || nextIndex === allSelectable.length) {
+        nextIndex = currentIndex;
+        const input = containerRef.current
+          .querySelector('[data-search="true"]')
+          .querySelector("input");
+        input.focus();
+      } else if (allSelectable[nextIndex]) {
+        allSelectable[nextIndex].focus();
+        selectCallback(allSelectable[nextIndex].getAttribute("data-key"));
+      }
       if (e.which === 13 && typeof editCallBack === "function") {
         editCallBack(currentIndex);
       }

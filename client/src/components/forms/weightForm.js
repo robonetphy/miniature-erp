@@ -1,22 +1,15 @@
-import React, { useState, useRef } from "react";
+import React, { useState, useRef, useCallback,useEffect } from "react";
 import {
   TextField,
   Grid,
   Button,
   Typography,
   makeStyles,
-  Select,
-  MenuItem,
 } from "@material-ui/core";
 import CustomTable from "../table";
-import CustomModal from "../modal";
-const dataGenerator = (data, length) => {
-  var dummy = [];
-  for (var i = 0; i < length; i++) {
-    dummy.push(data);
-  }
-  return dummy;
-};
+import Autocomplete from "@material-ui/lab/Autocomplete";
+import { StockTable, CompanyTable } from "../customTables";
+import { v4 as uuidv4 } from "uuid";
 const useStyles = makeStyles((theme) => ({
   textField: {
     margin: "1% 2%",
@@ -47,12 +40,12 @@ const useStyles = makeStyles((theme) => ({
     width: "50%",
   },
 }));
-export default function ManageWeight() {
+export default function ManageWeight(props) {
   const classes = useStyles();
   const containerRef = useRef(null);
   const [WeightData, setWeightData] = useState({
-    Size: "",
-    Type: "",
+    Size: "N/A",
+    Type: "N/A",
     Company: "ALL",
     Product: "ALL",
     Weight: 0,
@@ -63,8 +56,8 @@ export default function ManageWeight() {
   const cleanForm = () => {
     setWeightData((prev) => ({
       ...prev,
-      Size: "",
-      Type: "",
+      Size: "N/A",
+      Type: "N/A",
       Company: "ALL",
       Product: "ALL",
       Weight: 0,
@@ -72,25 +65,28 @@ export default function ManageWeight() {
       showCompanyTable: false,
     }));
   };
-  const handleWeightDataChange = (event) => {
+  const handleWeightDataChange = (event, newValue) => {
     setWeightData((prev) => ({
       ...prev,
-      [event.target.name]: event.target.value,
+      [event.target.name]: newValue ?? event.target.value,
     }));
   };
   const onTileSelect = (data) => {
     if (data)
       setWeightData((prev) => {
-        const [Product] = data;
+        const { name: Product } = data;
         return { ...prev, Product: Product, showStockTable: false };
       });
+
+    handleNextFocus("weight");
   };
   const onCompanySelect = (data) => {
     if (data)
       setWeightData((prev) => {
-        const [Company] = data;
+        const { company: Company } = data;
         return { ...prev, Company: Company, showCompanyTable: false };
       });
+    handleNextFocus("product");
   };
   const save = () => {
     console.log(WeightData);
@@ -108,12 +104,52 @@ export default function ManageWeight() {
         showStockTable: false,
         showCompanyTable: false,
         TableData: [
-          [prev.Product, prev.Company, prev.Size, prev.Type, prev.Weight],
+          {
+            product: prev.Product,
+            company: prev.Company,
+            size: prev.Size,
+            type: prev.Type,
+            weight: prev.Weight,
+            key: uuidv4(),
+          },
           ...prev.TableData,
         ],
       };
     });
   };
+  const preOrderHelper = useCallback((root) => {
+    if (root !== null) {
+      if (root.tabIndex !== -1) return root;
+      var nodes = root.childNodes;
+      var isFound = null;
+      for (var i = 0; i < nodes.length; i++) {
+        isFound = preOrderHelper(nodes[i]);
+        if (isFound instanceof Element) return isFound;
+      }
+    }
+    return null;
+  }, []);
+  const handleNextFocus = (nextElementName) => {
+    const child = containerRef.current.querySelector(
+      `[data-name="${nextElementName}"]`
+    );
+    preOrderHelper(child).focus();
+  };
+  const handleEscape = useCallback(
+    (e) => {
+      if (e.which === 27) {
+        props.closeModal();
+      }
+    },
+    [props]
+  );
+  useEffect(() => {
+    const container = containerRef.current;
+    container.addEventListener("keydown", handleEscape);
+    return () => {
+      container.removeEventListener("keydown", handleEscape);
+    };
+  }, [containerRef, handleEscape]);
   return (
     <div ref={containerRef}>
       <Grid container className={classes.button} spacing={3}>
@@ -132,42 +168,77 @@ export default function ManageWeight() {
           </Typography>
         </Grid>
         <Grid item sm={3}>
-          <Select
+          <Autocomplete
+            options={["N/A", "123x123", "11x12", "15x15"]}
             value={WeightData.Size}
-            onChange={handleWeightDataChange}
-            name="Size"
+            onChange={(e, newValue) => {
+              setWeightData((prev) => ({ ...prev, Size: newValue }));
+            }}
             className={classes.textField}
-            variant="outlined"
             fullWidth={true}
-          >
-            <MenuItem value="">
-              <em>None</em>
-            </MenuItem>
-            <MenuItem value={10}>Size A</MenuItem>
-            <MenuItem value={20}>Size A</MenuItem>
-            <MenuItem value={30}>Size A</MenuItem>
-          </Select>
-          <Select
+            autoHighlight={true}
+            autoSelect={true}
+            clearOnBlur={true}
+            blurOnSelect={true}
+            autoComplete={true}
+            openOnFocus={true}
+            disablePortal={true}
+            disableListWrap={true}
+            clearOnEscape={true}
+            renderInput={(params) => (
+              <TextField
+                data-name="size"
+                onKeyDown={(e) => {
+                  if (e.which === 13) {
+                    handleNextFocus("type");
+                  }
+                }}
+                {...params}
+                label="Size"
+                autoFocus={true}
+                variant="outlined"
+              />
+            )}
+          />
+          <Autocomplete
+            options={["N/A", "ABC", "ABXC", "ABCS"]}
             value={WeightData.Type}
-            onChange={handleWeightDataChange}
-            name="Type"
+            onChange={(e, newValue) => {
+              setWeightData((prev) => ({ ...prev, Type: newValue }));
+            }}
             className={classes.textField}
-            variant="outlined"
             fullWidth={true}
-          >
-            <MenuItem value="">
-              <em>None</em>
-            </MenuItem>
-            <MenuItem value={10}>10</MenuItem>
-            <MenuItem value={20}>20</MenuItem>
-            <MenuItem value={30}>30</MenuItem>
-          </Select>
+            autoHighlight={true}
+            autoSelect={true}
+            clearOnBlur={true}
+            blurOnSelect={true}
+            autoComplete={true}
+            openOnFocus={true}
+            disablePortal={true}
+            disableListWrap={true}
+            clearOnEscape={true}
+            renderInput={(params) => (
+              <TextField
+                data-name="type"
+                onKeyDown={(e) => {
+                  if (e.which === 13) {
+                    handleNextFocus("company");
+                  }
+                }}
+                {...params}
+                label="Type"
+                variant="outlined"
+              />
+            )}
+          />
+
           <span className={classes.SelectedItems}>{WeightData.Company}</span>
           <Button
             variant="contained"
             size="large"
             color="primary"
             className={classes.Typebutton}
+            data-name="company"
             onClick={() => {
               containerRef.current.querySelector(":focus").blur();
               setWeightData((prev) => ({ ...prev, showCompanyTable: true }));
@@ -180,6 +251,7 @@ export default function ManageWeight() {
             variant="contained"
             size="large"
             color="primary"
+            data-name="product"
             className={classes.Typebutton}
             onClick={() => {
               containerRef.current.querySelector(":focus").blur();
@@ -214,6 +286,12 @@ export default function ManageWeight() {
             className={classes.textField}
             label="Weight"
             width="50"
+            data-name="weight"
+            onKeyDown={(e) => {
+              if (e.which === 13) {
+                handleNextFocus("addweight");
+              }
+            }}
           />
           <Button
             variant="contained"
@@ -221,6 +299,7 @@ export default function ManageWeight() {
             color="primary"
             className={classes.Typebutton}
             onClick={addWeight}
+            data-name="addweight"
           >
             Add Weight
           </Button>
@@ -229,81 +308,37 @@ export default function ManageWeight() {
 
       <CustomTable
         {...{
-          columns: ["Name", "Company", "Size", "Type", "Weight"],
-          isSearchEnable: true,
+          columns: [
+            { title: "Product", id: "product" },
+            { title: "Company", id: "company" },
+            { title: "Size", id: "size" },
+            { title: "Type", id: "type" },
+            { title: "Weight", id: "weight" },
+          ],
           title: "",
-          selectableRows: "none",
-          fixedHeader: true,
           tableBodyHeight: "300px",
           data: WeightData.TableData,
+          autoFocus: false,
         }}
       ></CustomTable>
       {WeightData.showStockTable ? (
-        <CustomModal
-          showModal={WeightData.showStockTable}
+        <StockTable
+          showStockTable={WeightData.showStockTable}
           closeModal={() => {
             setWeightData((prev) => ({ ...prev, showStockTable: false }));
           }}
-          modalTitle="Stock Table"
-          ModalType={(props) => (
-            <CustomTable
-              {...{
-                columns: [
-                  "Name",
-                  "Size",
-                  "Company",
-                  "Qty",
-                  "Type",
-                  "Rate",
-                  "HNS",
-                ],
-                data: [
-                  ...dataGenerator(
-                    ["T1", "18x12", "ABC", 1000, "abs", 200, "12%"],
-                    105
-                  ),
-                ],
-                title: "Inventory",
-                isSearchEnable: true,
-                fixedHeader: true,
-                tableBodyHeight: "450px",
-                editCallback: onTileSelect,
-              }}
-            />
-          )}
-          modalWidth="60vw"
-          modalHeight="70vh"
-        ></CustomModal>
+          onTileDataSelect={onTileSelect}
+        />
       ) : null}
 
       {WeightData.showCompanyTable ? (
-        <CustomModal
-          showModal={WeightData.showCompanyTable}
+        <CompanyTable
+          showCompanyTable={WeightData.showCompanyTable}
           closeModal={() => {
             setWeightData((prev) => ({ ...prev, showCompanyTable: false }));
           }}
-          modalTitle="Company Table"
-          ModalType={(props) => (
-            <CustomTable
-              {...{
-                columns: ["Company", "Address", "Phone No1"],
-                data: [
-                  ...dataGenerator(
-                    ["ABC", "asdasfasddasdas", "+912123123123"],
-                    56
-                  ),
-                ],
-                title: "Company",
-                isSearchEnable: true,
-                fixedHeader: true,
-                tableBodyHeight: "450px",
-                editCallback: onCompanySelect,
-              }}
-            />
-          )}
-          modalWidth="60vw"
-          modalHeight="70vh"
-        ></CustomModal>
+          onCompanyDataSelect={onCompanySelect}
+        />
       ) : null}
     </div>
   );
