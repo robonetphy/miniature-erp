@@ -631,5 +631,14 @@ export default function Layout() {
 /*
 tune for where ever the custom table used
 fixedHeader: props.fixedHeader ?? false,
-tableBodyHeight: props.tableBodyHeight ?? "auto",
+tableBodyHeight: props.tableBodyHeight ?? "auto",\
+company and merchant gstin
+toggle button for paid or unpaid
+size structure change.
+last bill first in table
+Balance sheet of selected date.
+payment terms (under date )
+gst (2.5%) and cgst(2.5%) automatic calculation
+merchant profile with pending things. pdf for pending things.
+frameless with menu.
 */
