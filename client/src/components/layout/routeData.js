@@ -153,64 +153,6 @@ export const routes = [
     path: "/invoice",
     TableName: "Invoice",
   },
-  {
-    Component: CustomTable,
-    data: {
-      columns: [
-        { title: "Date", id: "date" },
-        { title: "Title", id: "title" },
-        { title: "Qty", id: "qty" },
-        { title: "Amount", id: "amount" },
-        { title: "Remarks", id: "remarks" },
-      ],
-      data: [
-        ...dataGenerator(
-          {
-            date: "12-2-2021",
-            title: "Title1",
-            qty: 100,
-            amount: 1000,
-            remarks: "Firstone",
-          },
-          42
-        ),
-      ],
-      title: "Breakage",
-      tableBodyHeight: "600px",
-    },
-    path: "/breakage",
-    TableName: "Breakage",
-  },
-  {
-    Component: CustomTable,
-    data: {
-      columns: [
-        { title: "RI No", id: "rino" },
-        { title: "Date", id: "date" },
-        { title: "Merchant", id: "merchant" },
-        { title: "Total Qty", id: "totalqty" },
-        { title: "Total Amount", id: "totalamount" },
-        { title: "Remarks", id: "remarks" },
-      ],
-      data: [
-        ...dataGenerator(
-          {
-            rino: "123123",
-            date: "21-12-2021",
-            merchant: "ABC",
-            totalqty: 123,
-            totalamount: 312,
-            remarks: "hi there",
-          },
-          54
-        ),
-      ],
-      title: "Return",
-      tableBodyHeight: "600px",
-    },
-    path: "/return",
-    TableName: "Return",
-  },
 ];
 
 /**
