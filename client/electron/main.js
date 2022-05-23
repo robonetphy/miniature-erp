@@ -76,28 +76,6 @@ const mainMenuTemplate = [
     ],
   },
   {
-    label: "Breakage",
-    submenu: [
-      {
-        label: "Create New Breakage",
-        click() {
-          mainWindow.webContents.send("modalToLoad", "Breakage");
-        },
-      },
-    ],
-  },
-  {
-    label: "Return",
-    submenu: [
-      {
-        label: "Create New Return",
-        click() {
-          mainWindow.webContents.send("modalToLoad", "Return");
-        },
-      },
-    ],
-  },
-  {
     label: "Merchant",
     submenu: [
       {
